@@ -1,0 +1,16 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Raw data: downloaded, not versioned (see README for how to obtain it)
+data/raw/**
+!data/raw/**/
+!data/raw/**/.gitkeep
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
