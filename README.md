@@ -2,18 +2,18 @@
 
 An interactive dashboard (Plotly + Dash) for exploring athlete-level Olympic results from Athens 1896 to Beijing 2022, built for a university data-visualization course. See [REQUIREMENTS.md](REQUIREMENTS.md) for the assignment brief.
 
-> Status: **Phase 0, project setup.** Sections marked _TBD_ are filled in during later phases.
+> Status: **Phase 1, data profiling complete.** Sections marked _TBD_ are filled in during later phases.
 
 ## Data sources
 
 | Source | What it gives us | Link | License |
 |---|---|---|---|
-| **126 Years of Historical Olympic Dataset**, Muhammad Ehsan (Kaggle), derived from [Olympedia.org](https://www.olympedia.org) | Athlete bios, event results, Games, medal tallies | _TBD: Kaggle URL (confirmed in Phase 1)_ | _TBD_ |
+| **126 Years of Historical Olympic Dataset**, Muhammad Ehsan (Kaggle), scraped from [Olympedia.org](https://www.olympedia.org). Files dated 27 Aug 2024 | Athlete biographies, athlete-event results, event descriptions, Games, medal tallies, NOC names (6 CSVs) | https://www.kaggle.com/datasets/muhammadehsan02/126-years-of-historical-olympic-dataset _(URL to confirm)_ | _TBD: see Kaggle page_ |
 | **World Bank Open Data** | Population (`SP.POP.TOTL`), GDP current US$ (`NY.GDP.MKTP.CD`), 1960 onwards | https://data.worldbank.org | CC BY 4.0 |
 
 ### Getting the raw data
 1. Download the Kaggle dataset (a free Kaggle login is needed) and unzip **all CSV files** into `data/raw/olympics/`.
-2. World Bank data is fetched by a script: _TBD (Phase 1)_.
+2. Fetch World Bank data (no key needed, internet required once): `python scripts/fetch_worldbank.py`
 
 ## Setup
 
