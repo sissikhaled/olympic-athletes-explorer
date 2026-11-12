@@ -2,7 +2,7 @@
 
 An interactive dashboard (Plotly + Dash) for exploring athlete-level Olympic results from Athens 1896 to Beijing 2022, built for a university data-visualization course. See [REQUIREMENTS.md](REQUIREMENTS.md) for the assignment brief.
 
-> Status: **Phase 3, dashboard design complete** ([docs/analytical_questions.md](docs/analytical_questions.md)). The full plan and progress are in [docs/project_plan.md](docs/project_plan.md). Sections marked _TBD_ are filled in during later phases.
+> Status: **Phase 4, app skeleton running** (layout, theme, global filters; charts follow in Phase 5). The full plan and progress are in [docs/project_plan.md](docs/project_plan.md). Sections marked _TBD_ are filled in during later phases.
 
 ## Data sources
 
@@ -32,20 +32,34 @@ pip install -r requirements.txt
 ```
 
 ## Running
-_TBD (Phase 4)._ The target is a single command, `python app.py`, then open http://127.0.0.1:8050.
+
+```bash
+source .venv/bin/activate
+python app.py
+```
+Then open http://127.0.0.1:8050. Set `DASH_DEBUG=1` for hot reload while developing, or `PORT=8051` to use another port.
+
+Run the tests with `python -m pytest`.
 
 ## Project structure
 
 ```
 ├── REQUIREMENTS.md      assignment brief (reference)
-├── app.py               dashboard entry point            (Phase 4)
+├── app.py               dashboard entry point: python app.py
+├── assets/style.css     page styling (loaded automatically by Dash)
 ├── data/
 │   ├── raw/             downloaded data, not in git
 │   ├── reference/       hand-made lookup tables (NOC → ISO3)
 │   └── processed/       cleaned parquet files used by the app
 ├── scripts/             fetch + prepare pipeline commands
 ├── src/olympics/        data loading, cleaning, features, aggregation
-├── dashboard/           layout, theme, one module per tab
+├── dashboard/
+│   ├── theme.py         colours, Plotly template, empty-state figure
+│   ├── data_access.py   loads parquet once, applies the global filters
+│   ├── components.py    chart card, segmented control, data grid
+│   ├── layout.py        header, filter sidebar, tabs, About dialog
+│   ├── callbacks.py     sidebar -> filter store, reset, summary
+│   └── tabs/            one module per tab
 ├── docs/                data-preparation log, analytical questions, demo script
 └── tests/               pytest tests
 ```
