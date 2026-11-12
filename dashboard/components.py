@@ -5,7 +5,7 @@ from dash import dcc, html
 import dash_ag_grid as dag
 import dash_bootstrap_components as dbc
 
-from .theme import GRAPH_CONFIG, GRAPH_CONFIG_SELECT, empty_figure
+from .theme import GRAPH_CONFIG, GRAPH_CONFIG_SELECT, MEDAL_COLORS, MEDAL_ORDER, empty_figure
 
 FT_URL = "https://ft-interactive.github.io/visual-vocabulary/"
 
@@ -73,6 +73,16 @@ def data_grid(id_: str, page_size: int = 10, row_selection: str | None = None) -
         options["rowSelection"] = {"mode": "singleRow" if row_selection == "single" else "multiRow",
                                    "enableClickSelection": True, "checkboxes": False}
     return dag.AgGrid(id=id_, rowData=[], columnDefs=[], className="ag-theme-quartz",
+                      getRowId="params.data.athlete_id",
                       defaultColDef={"sortable": True, "filter": True, "resizable": True, "flex": 1,
                                      "minWidth": 90},
                       dashGridOptions=options, style={"width": "100%"})
+
+
+def medal_badges(counts: dict) -> html.Span:
+    """Medal counts as coloured badges that always carry a text label (G/S/B):
+    metallic colours alone are not distinguishable enough (design decision)."""
+    badges = [html.Span(f"{m[0]} {counts[m]}", className="medal-badge",
+                        style={"backgroundColor": MEDAL_COLORS[m]}, title=f"{counts[m]} {m.lower()}")
+              for m in MEDAL_ORDER if counts.get(m, 0)]
+    return html.Span(badges or "–", className="text-nowrap")

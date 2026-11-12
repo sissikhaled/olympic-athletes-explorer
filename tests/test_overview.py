@@ -1,0 +1,83 @@
+"""Tests for the Overview tab builders (Q1.1-Q1.4)."""
+import sys
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+pytestmark = pytest.mark.skipif(not (ROOT / "data" / "processed" / "athlete_games.parquet").exists(),
+                                reason="run scripts/prepare_data.py first")
+
+from dashboard import data_access as da  # noqa: E402
+from dashboard.tabs import overview as ov  # noqa: E402
+
+F = da.DEFAULT_FILTERS
+RIO = {**F, "years": [2016, 2016], "season": "Summer"}
+
+
+def test_kpis_match_official_rio_2016():
+    v = ov.kpi_values(RIO)
+    assert v["events"] == 306            # official number of medal events at Rio 2016
+    assert v["countries"] == 207         # 205 NOCs + Refugee team + Independent athletes
+    assert v["editions"] == 1
+
+
+def test_previous_games_is_same_season():
+    prev, label = ov.previous_games_filters(RIO)
+    assert prev["years"] == [2012, 2012] and prev["season"] == "Summer" and label == "2012 Summer"
+    assert ov.previous_games_filters(F) is None          # many Games selected -> no comparison
+
+
+def test_participation_counts_each_athlete_once_per_games():
+    d = ov.participation_data(RIO)
+    a = da.filter_athletes(RIO)
+    assert d.n.sum() == a.athlete_id.nunique()
+
+
+def test_participation_marks_cancelled_games_as_gaps():
+    fig = ov.fig_participation({**F, "season": "Summer"})
+    women = [t for t in fig.data if t.name == "Women"]
+    assert len(women) == 3                               # 1896-1912, 1920-1936, 1948-2020: broken at wars
+    assert all(not (t.x[0] < 1916 < t.x[-1]) for t in women)   # no segment bridges a cancelled Games
+    labels = [a.text for a in fig.layout.annotations]
+    assert "WWI" in labels and "WWII" in labels
+
+
+def test_treemap_hierarchy_is_consistent():
+    n = ov.treemap_frame(F)
+    assert set(n.level) == {"season", "sport", "event"}
+    ids = set(n.id)
+    assert all(p == "" or p in ids for p in n.parent)   # every parent exists
+    sports = n[n.level == "sport"].set_index("id").value
+    events = n[n.level == "event"].groupby("parent").value.sum()
+    assert (sports == events.reindex(sports.index)).all()  # branchvalues="total" holds
+
+
+def test_treemap_click_selects_sport():
+    assert ov.sport_from_click({"points": [{"id": "Winter/Biathlon"}]}) == "Biathlon"
+    assert ov.sport_from_click({"points": [{"id": "Winter/Biathlon/Relay, Men"}]}) == "Biathlon"
+    assert ov.sport_from_click({"points": [{"id": "Summer"}]}) is None
+    assert ov.sport_from_click(None) is None
+
+
+def test_search_is_accent_insensitive_and_ranked():
+    rows, _ = ov.search_athletes(F, "comaneci")
+    assert rows[0]["name"] == "Nadia Comăneci"
+    rows, _ = ov.search_athletes(F, None)
+    assert rows[0]["name"] == "Michael Phelps" and rows[0]["medals"] == 28
+    medals = [r["medals"] for r in rows]
+    assert medals == sorted(medals, reverse=True)
+
+
+def test_search_respects_filters_and_handles_no_match():
+    rows, _ = ov.search_athletes({**F, "season": "Winter"}, "phelps")
+    assert rows == []
+    rows, info = ov.search_athletes(F, "zzzz-no-such-athlete")
+    assert rows == [] and "No athlete" in info
+
+
+def test_empty_filters_give_placeholder_figures():
+    none = {**F, "years": [1916, 1918]}
+    for fig in (ov.fig_participation(none), ov.fig_treemap(none)):
+        assert len(fig.data) == 0 and fig.layout.annotations

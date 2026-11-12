@@ -76,3 +76,12 @@ def empty_figure(message: str = "No athletes match these filters",
     fig.update_yaxes(visible=False)
     fig.update_layout(margin=dict(l=8, r=8, t=8, b=8))
     return fig
+
+
+def tint(hex_color: str, amount: float) -> str:
+    """Mix a colour with white (amount 0 = unchanged, 1 = white). Used for
+    large areas such as treemap tiles, where full-strength colour is too heavy."""
+    h = hex_color.lstrip("#")
+    r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
+    mix = lambda c: round(c + (255 - c) * amount)  # noqa: E731
+    return f"#{mix(r):02x}{mix(g):02x}{mix(b):02x}"

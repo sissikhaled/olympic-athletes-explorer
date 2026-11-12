@@ -104,3 +104,10 @@ body {
 /* links and link-buttons use the accent colour, not Flatly's green */
 a, .btn-link { color: var(--accent); }
 a:hover, .btn-link:hover { color: #1c5cab; }
+
+/* medal badges: colour + text label, never colour alone */
+.medal-badge { display: inline-block; color: #fff; font-weight: 700; font-size: 11px; border-radius: 4px;
+               padding: 1px 6px; margin-right: 4px; }
+.athlete-card { border: 1px solid var(--card-border); border-left: 4px solid var(--accent); }
+.ag-theme-quartz { --ag-font-family: Inter, -apple-system, "Segoe UI", sans-serif; --ag-font-size: 13px;
+                   --ag-active-color: #2a78d6; --ag-selected-row-background-color: #eef4fc; }
