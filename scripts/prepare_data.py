@@ -32,8 +32,11 @@ def main() -> None:
 
     # 2. Derived variables -------------------------------------------------
     athlete_games = features.build_athlete_games(events, athletes, games)
+    dns = athlete_games.attrs.get("dns_only_removed", 0)
     log.add("athlete_games", "Collapse athlete-event rows to athlete x Games x sport", len(events),
-            len(athlete_games), "one row per athlete per sport per Games")
+            len(athlete_games) + dns, "one row per athlete per sport per Games")
+    log.add("athlete_games", "Drop DNS-only participations (D16)", len(athlete_games) + dns,
+            len(athlete_games), "athlete never started an event in that sport at that Games")
     sports = features.build_sports(athlete_games, games)
     athlete_games = athlete_games.merge(sports[["sport", "is_current", "is_minor"]], on="sport")
     events = events.merge(games[["edition_id", "year", "season"]], on="edition_id")

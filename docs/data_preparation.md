@@ -129,6 +129,7 @@ Physique analysis is reliable from 1960 to 2016. Earlier decades and the 2020/20
 | D13 | Implausible physique values (added in Phase 2) | Height outside 120–230 cm, weight outside 25–220 kg, or **BMI < 12** → value set to missing (athlete kept) | Only 1 case triggered: 169 cm / 30 kg. Very light gymnasts (BMI 12.3–13.5) and heavy judoka/lifters (BMI up to 56) are real and kept |
 | D14 | Weight formats beyond ranges (added in Phase 2) | `77,5` → 77.5; two recorded weights `124, 131` → mean, flagged approximate | Same logic as D4 |
 | D15 | Map placement of historic teams (added in Phase 5b) | Each historic team keeps its **own** circle on the medal map, drawn at its main successor's location (`data/reference/noc_map_location.csv`: USSR/EUN/ROC → Russia, GDR/FRG → Germany, TCH → Czechia, YUG/SCG → Serbia …). Stored as `country_games.map_iso3`, used for drawing only; `iso3` and all World Bank values are unchanged | Keeps the Cold War powers on the map without merging teams that competed separately (D9). Mixed teams (`MIX`) and Independent Olympic Athletes (`IOA`) have no location and are not drawn |
+| D16 | Athletes who never started (added in Phase 5d) | An athlete counts as taking part in a Games (in a sport) only if at least one entry is **not** "Did not start". 3,093 DNS-only participations are dropped from `athlete_games`; the entries stay in `athlete_events` | Matches the usual meaning of "competed". Example: Stamata Revithi and Melpomene, listed for the 1896 marathon but refused entry, no longer count as the first female Olympians. With D16, women first compete in 1900 and women's athletics starts in 1928, as in official histories |
 
 ---
 
@@ -166,6 +167,7 @@ python -m pytest                    # 15 tests on the rules and the outputs
 | medal_tally | Merge 1956 Equestrian (D3) | 1,789 → 1,783 | medals summed per country |
 | medal_tally | Subtract Art medals (D7) | 1,783 → 1,775 | 147 medals removed |
 | athlete_games | Collapse to athlete × Games × sport | 313,167 → 215,409 | |
+| athlete_games | Drop DNS-only participations (D16) | 215,409 → 212,316 | −3,093 |
 
 ### 4.2 Type conversions
 * IDs and years → integers; height/weight/BMI/age → floats; birth and Games dates → datetimes.
@@ -202,7 +204,7 @@ python -m pytest                    # 15 tests on the rules and the outputs
 ### 4.6 Output tables (`data/processed/`)
 | Table | Rows | Grain | Used for |
 |---|---:|---|---|
-| `athlete_games` | 215,409 | athlete × Games × sport | physique, age, gender, sport comparison, athlete search |
+| `athlete_games` | 212,316 | athlete × Games × sport (started at least one event) | physique, age, gender, sport comparison, athlete search |
 | `athlete_events` | 313,167 | athlete × event | event-level detail, results status |
 | `country_games` | 4,192 | country × Games | map, rankings, medals vs GDP/population |
 | `medals_by_sport` | 7,785 | country × Games × sport | country × sport specialisation |

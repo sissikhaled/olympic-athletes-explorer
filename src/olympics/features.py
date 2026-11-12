@@ -59,10 +59,15 @@ def build_athlete_games(events: pd.DataFrame, athletes: pd.DataFrame, games: pd.
     """
     medals = pd.get_dummies(events.medal).astype(int)
     ev = pd.concat([events[["athlete_id", "edition_id", "noc", "sport", "result_id"]], medals], axis=1)
+    ev["started"] = events.result_status.ne("Did not start")
     ag = (ev.groupby(["athlete_id", "edition_id", "noc", "sport"], observed=True)
             .agg(n_events=("result_id", "nunique"), n_gold=("Gold", "sum"),
-                 n_silver=("Silver", "sum"), n_bronze=("Bronze", "sum"))
+                 n_silver=("Silver", "sum"), n_bronze=("Bronze", "sum"), started=("started", "max"))
             .reset_index())
+    # D16: an athlete takes part in a Games (in a sport) only if they started at least one event.
+    # Entries that were all "Did not start" (e.g. Revithi and Melpomene, 1896) are not participations.
+    dns_only_removed = int((~ag.started).sum())
+    ag = ag[ag.started].drop(columns="started")
     ag["n_medals"] = ag.n_gold + ag.n_silver + ag.n_bronze
     ag["is_medalist"] = ag.n_medals > 0
 
@@ -85,6 +90,7 @@ def build_athlete_games(events: pd.DataFrame, athletes: pd.DataFrame, games: pd.
     ag = ag.merge(career, on="athlete_id")
 
     ag = ag.drop(columns=["start_date", "birth_date", "host_noc"])
+    ag.attrs["dns_only_removed"] = dns_only_removed      # read by prepare_data for the step log
     return ag
 
 

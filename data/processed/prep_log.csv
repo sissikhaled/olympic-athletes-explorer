@@ -15,3 +15,4 @@ medal_tally,Drop 1906 Intercalated (D2),1807,1789,18,
 medal_tally,Merge 1956 Equestrian rows into 1956 Summer (D3),1789,1783,6,medals summed per country
 medal_tally,Subtract Art Competitions medals (D7),1783,1775,8,147 art medals removed; countries left with 0 medals dropped
 athlete_games,Collapse athlete-event rows to athlete x Games x sport,313167,215409,97758,one row per athlete per sport per Games
+athlete_games,Drop DNS-only participations (D16),215409,212316,3093,athlete never started an event in that sport at that Games

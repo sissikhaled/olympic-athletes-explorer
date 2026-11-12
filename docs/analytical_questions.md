@@ -247,3 +247,6 @@ Colors that are hard to read on white (yellow, aqua) are always paired with visi
 | Physique counting unit (Phase 5c) | Height, weight and BMI: each athlete once per sport (latest Games in the filter). Age: once per Games |
 | Minimum sample (Phase 5c) | A box or violin needs 30+ measured athletes; a Games on the trend chart needs 8+ |
 | Focus sport (Phase 5c) | Set by clicking a sport in Q3.1 or by a menu; drives Q3.2–Q3.4. The trend reference ("all sports") uses the focus sport's season only |
+| Gender milestones (Phase 5d) | Only milestones confirmed in the data are labelled. Not labelled: "2012, every country sent women" (3 teams had no women in this data) and women's gymnastics in 1900 (contradicts the historical record, probably a data quirk) |
+| Gender heatmap (Phase 5d) | Cells with fewer than 10 athletes are blank; sports ordered by the decade women first took part |
+| DNS-only athletes (Phase 5d) | Not counted as participants (D16), applied to every tab |
