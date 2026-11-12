@@ -250,3 +250,5 @@ Colors that are hard to read on white (yellow, aqua) are always paired with visi
 | Gender milestones (Phase 5d) | Only milestones confirmed in the data are labelled. Not labelled: "2012, every country sent women" (3 teams had no women in this data) and women's gymnastics in 1900 (contradicts the historical record, probably a data quirk) |
 | Gender heatmap (Phase 5d) | Cells with fewer than 10 athletes are blank; sports ordered by the decade women first took part |
 | DNS-only athletes (Phase 5d) | Not counted as participants (D16), applied to every tab |
+| Sport similarity (Phase 5e) | PCA on standardised sport profiles (mean height, weight, BMI, age, % women), recomputed for the filters. Axes are named automatically from their strongest loadings (default: axis 1 = size, 57 %; axis 2 = age, 18 %). With a Sex filter set, % women is dropped |
+| Compared sports (Phase 5e) | 2–4 sports; a 5th click drops the oldest pick (with a message); a lasso keeps the 4 largest sports. Each sport keeps its colour while it stays selected; a newcomer takes a freed colour |
