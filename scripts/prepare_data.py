@@ -40,7 +40,9 @@ def main() -> None:
 
     # 3. Integration and aggregates ---------------------------------------
     wb = aggregate.worldbank_long(wb_raw)
-    country_games = aggregate.country_games(tally, athlete_games, games, countries, noc_map, wb)
+    map_loc = pd.read_csv(REFERENCE / "noc_map_location.csv", keep_default_na=False)
+    country_games = aggregate.country_games(tally, athlete_games, games, countries, noc_map, wb,
+                                            dict(zip(map_loc.noc, map_loc.place_iso3)))
     medals_sport = aggregate.medals_by_sport(events, games)
     profiles = aggregate.sport_profiles(athlete_games).merge(sports, on=["sport", "n_athletes"])
     participation = features.athlete_count_per_edition(athlete_games)

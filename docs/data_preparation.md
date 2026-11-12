@@ -128,6 +128,7 @@ Physique analysis is reliable from 1960 to 2016. Earlier decades and the 2020/20
 | D12 | Nationality | Event-level NOC used for participation/medals, not bio NOC | 2,177 athletes changed nationality |
 | D13 | Implausible physique values (added in Phase 2) | Height outside 120–230 cm, weight outside 25–220 kg, or **BMI < 12** → value set to missing (athlete kept) | Only 1 case triggered: 169 cm / 30 kg. Very light gymnasts (BMI 12.3–13.5) and heavy judoka/lifters (BMI up to 56) are real and kept |
 | D14 | Weight formats beyond ranges (added in Phase 2) | `77,5` → 77.5; two recorded weights `124, 131` → mean, flagged approximate | Same logic as D4 |
+| D15 | Map placement of historic teams (added in Phase 5b) | Each historic team keeps its **own** circle on the medal map, drawn at its main successor's location (`data/reference/noc_map_location.csv`: USSR/EUN/ROC → Russia, GDR/FRG → Germany, TCH → Czechia, YUG/SCG → Serbia …). Stored as `country_games.map_iso3`, used for drawing only; `iso3` and all World Bank values are unchanged | Keeps the Cold War powers on the map without merging teams that competed separately (D9). Mixed teams (`MIX`) and Independent Olympic Athletes (`IOA`) have no location and are not drawn |
 
 ---
 

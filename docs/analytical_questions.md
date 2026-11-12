@@ -241,3 +241,6 @@ Colors that are hard to read on white (yellow, aqua) are always paired with visi
 | Part to whole | Sunburst → **treemap** |
 | Flow | New **Sankey** of national-team switches (Q2.6) |
 | Distribution | New **age–sex population pyramid** (Q4.4) |
+| Historic teams on the map (Phase 5b) | Own circle at the main successor's location (D15), e.g. USSR, Unified Team and ROC as separate circles at Russia |
+| Rank-based charts (Q2.2, Q2.5) | Compare one season at a time: with Season = Both they show the Summer Games, with a note |
+| Specialisation index | Zero medals in a sport are shown blank, not as "strongly weaker" |

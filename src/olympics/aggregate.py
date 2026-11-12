@@ -79,7 +79,8 @@ def worldbank_long(wb: dict[str, pd.DataFrame]) -> pd.DataFrame:
 
 
 def country_games(tally: pd.DataFrame, athlete_games: pd.DataFrame, games: pd.DataFrame,
-                  countries: pd.DataFrame, noc_map: pd.DataFrame, wb: pd.DataFrame) -> pd.DataFrame:
+                  countries: pd.DataFrame, noc_map: pd.DataFrame, wb: pd.DataFrame,
+                  map_location: dict[str, str]) -> pd.DataFrame:
     """One row per country x Games: delegation size, official medals, economy.
 
     Includes countries that took part but won nothing (total = 0), so maps and
@@ -96,6 +97,9 @@ def country_games(tally: pd.DataFrame, athlete_games: pd.DataFrame, games: pd.Da
     cg["is_host"] = cg.noc == cg.host_noc
     cg = cg.drop(columns="host_noc")
     cg = cg.merge(countries, on="noc", how="left").merge(noc_map[["noc", "iso3"]], on="noc", how="left")
+    # Map placement only (decision D15): historic teams are drawn at their main successor.
+    # Analysis columns (iso3, World Bank values) are untouched.
+    cg["map_iso3"] = cg.iso3.fillna(cg.noc.map(map_location))
 
     # World Bank values for the Games year (1960+ only; D9 historic NOCs have no ISO3)
     cg = cg.merge(wb, on=["iso3", "year"], how="left")
