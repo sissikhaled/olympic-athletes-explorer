@@ -126,3 +126,89 @@ Physique analysis is reliable from 1960 to 2016. Earlier decades and the 2020/20
 | D10 | Cancelled (war) and future Games | Removed from analysis tables. War gaps shown as annotations on timelines | No athlete data |
 | D11 | Low physique coverage before 1960 and for 2020/2022 (§2.6) | Kept; every physique chart shows sample size *n* | Transparency over silent filtering |
 | D12 | Nationality | Event-level NOC used for participation/medals, not bio NOC | 2,177 athletes changed nationality |
+| D13 | Implausible physique values (added in Phase 2) | Height outside 120–230 cm, weight outside 25–220 kg, or **BMI < 12** → value set to missing (athlete kept) | Only 1 case triggered: 169 cm / 30 kg. Very light gymnasts (BMI 12.3–13.5) and heavy judoka/lifters (BMI up to 56) are real and kept |
+| D14 | Weight formats beyond ranges (added in Phase 2) | `77,5` → 77.5; two recorded weights `124, 131` → mean, flagged approximate | Same logic as D4 |
+
+---
+
+## 4. Phase 2: the cleaning pipeline
+
+Everything below is produced by one command:
+```bash
+python scripts/prepare_data.py      # ~5 s; raw CSV -> data/processed/*.parquet
+python -m pytest                    # 15 tests on the rules and the outputs
+```
+
+| Module | Responsibility |
+|---|---|
+| `src/olympics/load.py` | Read raw files **as text only** (no type guessing) |
+| `src/olympics/clean.py` | Types, filters, decisions D1–D14, `PrepLog` step recorder |
+| `src/olympics/features.py` | Derived variables, athlete-level table, sport table |
+| `src/olympics/aggregate.py` | Once-per-event medal counting, World Bank join, summaries |
+| `scripts/build_noc_mapping.py` | Builds the NOC → ISO3 reference table (run once, output committed) |
+
+### 4.1 Step log (from `data/processed/prep_log.csv`)
+| Table | Step | Rows before → after | Note |
+|---|---|---|---|
+| games | Remove Games cancelled by war (D10) | 64 → 59 | 1916, 1940 ×2, 1944 ×2 |
+| games | Remove future Games (D10) | 59 → 55 | 2024, 2026, 2028, 2032 |
+| games | Drop 1906, fold 1956 Equestrian (D2, D3) | 55 → 53 | |
+| athletes | Parse birth dates (D5) | 155,861 | exact 149,211 · year only 2,267 · free text → missing 330 · blank 4,053 |
+| athletes | Parse weights (D4, D14) | 155,861 | 958 approximate values |
+| athletes | Physique plausibility (D13) | 155,861 | 1 weight set to missing |
+| athlete_events | Drop exact duplicates (D8) | 316,834 → 315,626 | −1,208 |
+| athlete_events | Exclude Art Competitions (D1) | 315,626 → 313,196 | −2,430 |
+| athlete_events | Drop 1906 (D2) | 313,196 → 313,173 | −23 |
+| athlete_events | Merge 1956 Equestrian (D3) | 313,173 | 300 rows re-assigned |
+| athlete_events | Drop rows without biography | 313,173 → 313,167 | −6 |
+| medal_tally | Drop 1906 (D2) | 1,807 → 1,789 | |
+| medal_tally | Merge 1956 Equestrian (D3) | 1,789 → 1,783 | medals summed per country |
+| medal_tally | Subtract Art medals (D7) | 1,783 → 1,775 | 147 medals removed |
+| athlete_games | Collapse to athlete × Games × sport | 313,167 → 215,409 | |
+
+### 4.2 Type conversions
+* IDs and years → integers; height/weight/BMI/age → floats; birth and Games dates → datetimes.
+* `medal` → **ordered** categorical Gold > Silver > Bronze (blank = no medal), so sorting and colours follow the medal order.
+* `sex`, `event_gender`, `result_status`, `era` → categoricals; `isTeamSport` text → boolean.
+* Games start dates have no year in the source (`" 6 April"`). The year is added from the `year` column, except Tokyo 2020, which already says 2021. Where the official start is blank (1900, 1904), the first day of the competition window is used.
+
+### 4.3 Derived variables
+| Variable | Table | Definition |
+|---|---|---|
+| `age`, `age_is_approx` | athlete_games | Completed years on the opening day of the Games; birth-year-only → Games year − birth year (flagged) |
+| `bmi` | athlete_games | weight / height², 1 decimal |
+| `decade`, `era` | athlete_games | Era bins: Early (1896–1912), Interwar (1920–36), Cold War (1948–88), Modern (1992–2022) |
+| `is_host` | athlete_games, country_games | Competitor's NOC = host NOC of that Games |
+| `is_medalist`, `n_events`, `n_gold…n_medals` | athlete_games | The athlete's own results at that Games in that sport |
+| `n_games`, `first_year`, `last_year`, `career_span_years`, `career_medals` | athlete_games | Career over all Games |
+| `event_gender` | athlete_events | From the event-name suffix: Men / Women / Mixed / Open (early "Boys" events → Men) |
+| `result_status`, `final_place` | athlete_events | `pos` text parsed: Ranked (final place), Eliminated in heats/rounds, DNS, DNF, DQ, … |
+| `is_current` | sports | Sport on the programme of the latest Games of its season (2020 Summer / 2022 Winter) |
+| `is_minor` | sports | Fewer than 100 athletes in total (e.g. Ballooning, Aeronautics); lets filters hide one-off historic sports |
+| `rank` | country_games | Position in that Games' medal table (gold, then silver, then bronze) |
+| `medals_per_million`, `medals_per_100bn_gdp`, `gdp_per_capita` | country_games | Official medals ÷ World Bank population / GDP in the Games year (1960+) |
+
+### 4.4 Integration with World Bank data
+* `data/reference/noc_to_iso3.csv`: 235 NOCs. 176 matched automatically by normalised name, 28 hand-checked (`manual`), 29 `historic` (deliberately unmapped, D9), 2 `no_wb_data` (Chinese Taipei, Cook Islands). A pure code match would have been wrong in at least one case: `VNM` is *South Vietnam* in Olympic data, but *Vietnam* in ISO.
+* World Bank regional/income aggregates are excluded (rows without an ISO3 code).
+* Coverage: **95.7 %** of country–Games rows from 1960 onward have population data.
+* Known simplification: Germany (`GER`) maps to today's `DEU` series. For 1960–64 (the united German team) this is the reunified population, which only affects those two Games.
+
+### 4.5 Validation
+* Official tally (after D2, D3, D7) vs once-per-event counts from athlete data: **1,730 of 1,771 country–Games rows match exactly (97.7 %)**. Totals: 20,283 vs 20,250 medals (0.16 % apart). Remaining gaps are mixed-nation teams (`MIX`) and corrections Olympedia applied to only one of the two tables.
+* Spot checks against known facts are automated in `tests/test_prep.py`: USA 1984 = 83 gold / 174 total; Michael Phelps = 23 golds. Also checked by hand: Beijing 2008 China 48 golds; Ian Millar 10 Games; women's share of Summer athletes 1.8 % (1900) → 11.4 % (1960) → 47.8 % (2020).
+
+### 4.6 Output tables (`data/processed/`)
+| Table | Rows | Grain | Used for |
+|---|---:|---|---|
+| `athlete_games` | 215,409 | athlete × Games × sport | physique, age, gender, sport comparison, athlete search |
+| `athlete_events` | 313,167 | athlete × event | event-level detail, results status |
+| `country_games` | 4,192 | country × Games | map, rankings, medals vs GDP/population |
+| `medals_by_sport` | 7,785 | country × Games × sport | country × sport specialisation |
+| `sport_profiles` | 111 | sport | sport similarity map |
+| `sports` | 111 | sport | sport filter metadata |
+| `participation` | 106 | Games × sex | participation and gender trends |
+| `athletes` | 155,861 | athlete | biography lookups |
+| `games`, `countries` | 53 / 235 | dimension tables | labels, host info, ISO3 |
+
+Processed files are committed to git (CC BY 4.0 permits redistribution with attribution), so the dashboard runs without downloading raw data.

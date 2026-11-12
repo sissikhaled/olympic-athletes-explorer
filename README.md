@@ -2,18 +2,26 @@
 
 An interactive dashboard (Plotly + Dash) for exploring athlete-level Olympic results from Athens 1896 to Beijing 2022, built for a university data-visualization course. See [REQUIREMENTS.md](REQUIREMENTS.md) for the assignment brief.
 
-> Status: **Phase 1, data profiling complete.** Sections marked _TBD_ are filled in during later phases.
+> Status: **Phase 2, data preparation complete.** The full plan and progress are in [docs/project_plan.md](docs/project_plan.md). Sections marked _TBD_ are filled in during later phases.
 
 ## Data sources
 
 | Source | What it gives us | Link | License |
 |---|---|---|---|
-| **126 Years of Historical Olympic Dataset**, Muhammad Ehsan (Kaggle), scraped from [Olympedia.org](https://www.olympedia.org). Files dated 27 Aug 2024 | Athlete biographies, athlete-event results, event descriptions, Games, medal tallies, NOC names (6 CSVs) | https://www.kaggle.com/datasets/muhammadehsan02/126-years-of-historical-olympic-dataset _(URL to confirm)_ | _TBD: see Kaggle page_ |
+| **126 Years of Historical Olympic Dataset**, Muhammad Ehsan (Kaggle), scraped from [Olympedia.org](https://www.olympedia.org). Files dated 27 Aug 2024 | Athlete biographies, athlete-event results, event descriptions, Games, medal tallies, NOC names (6 CSVs) | https://www.kaggle.com/datasets/muhammadehsan02/126-years-of-historical-olympic-dataset | CC BY 4.0 (Attribution 4.0 International) |
 | **World Bank Open Data** | Population (`SP.POP.TOTL`), GDP current US$ (`NY.GDP.MKTP.CD`), 1960 onwards | https://data.worldbank.org | CC BY 4.0 |
 
 ### Getting the raw data
 1. Download the Kaggle dataset (a free Kaggle login is needed) and unzip **all CSV files** into `data/raw/olympics/`.
 2. Fetch World Bank data (no key needed, internet required once): `python scripts/fetch_worldbank.py`
+
+### Rebuilding the processed data (optional)
+The cleaned tables in `data/processed/` are committed, so this step is only needed to reproduce them:
+```bash
+python scripts/prepare_data.py   # raw CSV -> data/processed/*.parquet (~5 s)
+python -m pytest                 # checks the cleaning rules and outputs
+```
+Every cleaning decision is documented in [docs/data_preparation.md](docs/data_preparation.md).
 
 ## Setup
 

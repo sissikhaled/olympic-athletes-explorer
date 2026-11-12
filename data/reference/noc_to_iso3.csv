@@ -1,0 +1,236 @@
+noc,country,iso3,worldbank_name,match_method
+AFG,Afghanistan,AFG,Afghanistan,name_auto
+AHO,Netherlands Antilles,,,historic
+AIN,Individual Neutral Athletes,,,historic
+ALB,Albania,ALB,Albania,name_auto
+ALG,Algeria,DZA,Algeria,name_auto
+AND,Andorra,AND,Andorra,name_auto
+ANG,Angola,AGO,Angola,name_auto
+ANT,Antigua and Barbuda,ATG,Antigua and Barbuda,name_auto
+ANZ,Australasia,,,historic
+ARG,Argentina,ARG,Argentina,name_auto
+ARM,Armenia,ARM,Armenia,name_auto
+ARU,Aruba,ABW,Aruba,name_auto
+ASA,American Samoa,ASM,American Samoa,name_auto
+AUS,Australia,AUS,Australia,name_auto
+AUT,Austria,AUT,Austria,name_auto
+AZE,Azerbaijan,AZE,Azerbaijan,name_auto
+BAH,The Bahamas,BHS,"Bahamas, The",manual
+BAN,Bangladesh,BGD,Bangladesh,name_auto
+BAR,Barbados,BRB,Barbados,name_auto
+BDI,Burundi,BDI,Burundi,name_auto
+BEL,Belgium,BEL,Belgium,name_auto
+BEN,Benin,BEN,Benin,name_auto
+BER,Bermuda,BMU,Bermuda,name_auto
+BHU,Bhutan,BTN,Bhutan,name_auto
+BIH,Bosnia and Herzegovina,BIH,Bosnia and Herzegovina,name_auto
+BIZ,Belize,BLZ,Belize,name_auto
+BLR,Belarus,BLR,Belarus,name_auto
+BOH,Bohemia,,,historic
+BOL,Bolivia,BOL,Bolivia,name_auto
+BOT,Botswana,BWA,Botswana,name_auto
+BRA,Brazil,BRA,Brazil,name_auto
+BRN,Bahrain,BHR,Bahrain,name_auto
+BRU,Brunei Darussalam,BRN,Brunei Darussalam,name_auto
+BUL,Bulgaria,BGR,Bulgaria,name_auto
+BUR,Burkina Faso,BFA,Burkina Faso,name_auto
+CAF,Central African Republic,CAF,Central African Republic,name_auto
+CAM,Cambodia,KHM,Cambodia,name_auto
+CAN,Canada,CAN,Canada,name_auto
+CAY,Cayman Islands,CYM,Cayman Islands,name_auto
+CGO,Congo,COG,"Congo, Rep.",manual
+CHA,Chad,TCD,Chad,name_auto
+CHI,Chile,CHL,Chile,name_auto
+CHN,People's Republic of China,CHN,China,manual
+CIV,Côte d'Ivoire,CIV,Cote d'Ivoire,name_auto
+CMR,Cameroon,CMR,Cameroon,name_auto
+COD,Democratic Republic of the Congo,COD,"Congo, Dem. Rep.",manual
+COK,Cook Islands,,,no_wb_data
+COL,Colombia,COL,Colombia,name_auto
+COM,Comoros,COM,Comoros,name_auto
+COR,Korea Team,,,historic
+CPV,Cabo Verde,CPV,Cabo Verde,name_auto
+CRC,Costa Rica,CRI,Costa Rica,name_auto
+CRO,Croatia,HRV,Croatia,name_auto
+CRT,Crete,,,historic
+CUB,Cuba,CUB,Cuba,name_auto
+CYP,Cyprus,CYP,Cyprus,name_auto
+CZE,Czechia,CZE,Czechia,name_auto
+DEN,Denmark,DNK,Denmark,name_auto
+DJI,Djibouti,DJI,Djibouti,name_auto
+DMA,Dominica,DMA,Dominica,name_auto
+DOM,Dominican Republic,DOM,Dominican Republic,name_auto
+ECU,Ecuador,ECU,Ecuador,name_auto
+EGY,Egypt,EGY,"Egypt, Arab Rep.",manual
+EOR,Refugee Olympic Team,,,historic
+ERI,Eritrea,ERI,Eritrea,name_auto
+ESA,El Salvador,SLV,El Salvador,name_auto
+ESP,Spain,ESP,Spain,name_auto
+EST,Estonia,EST,Estonia,name_auto
+ETH,Ethiopia,ETH,Ethiopia,name_auto
+EUN,Unified Team,,,historic
+FIJ,Fiji,FJI,Fiji,name_auto
+FIN,Finland,FIN,Finland,name_auto
+FRA,France,FRA,France,name_auto
+FRG,West Germany,,,historic
+FSM,Federated States of Micronesia,FSM,"Micronesia, Fed. Sts.",manual
+GAB,Gabon,GAB,Gabon,name_auto
+GAM,The Gambia,GMB,"Gambia, The",manual
+GBR,Great Britain,GBR,United Kingdom,manual
+GBS,Guinea Bissau,GNB,Guinea-Bissau,name_auto
+GDR,East Germany,,,historic
+GEO,Georgia,GEO,Georgia,name_auto
+GEQ,Equatorial Guinea,GNQ,Equatorial Guinea,name_auto
+GER,Germany,DEU,Germany,name_auto
+GHA,Ghana,GHA,Ghana,name_auto
+GRE,Greece,GRC,Greece,name_auto
+GRN,Grenada,GRD,Grenada,name_auto
+GUA,Guatemala,GTM,Guatemala,name_auto
+GUI,Guinea,GIN,Guinea,name_auto
+GUM,Guam,GUM,Guam,name_auto
+GUY,Guyana,GUY,Guyana,name_auto
+HAI,Haiti,HTI,Haiti,name_auto
+HKG,"Hong Kong, China",HKG,"Hong Kong SAR, China",manual
+HON,Honduras,HND,Honduras,name_auto
+HUN,Hungary,HUN,Hungary,name_auto
+IFR,International Federation Representative,,,historic
+INA,Indonesia,IDN,Indonesia,name_auto
+IND,India,IND,India,name_auto
+IOA,Independent Olympic Athletes,,,historic
+IRI,Islamic Republic of Iran,IRN,"Iran, Islamic Rep.",manual
+IRL,Ireland,IRL,Ireland,name_auto
+IRQ,Iraq,IRQ,Iraq,name_auto
+ISL,Iceland,ISL,Iceland,name_auto
+ISR,Israel,ISR,Israel,name_auto
+ISV,United States Virgin Islands,VIR,Virgin Islands (U.S.),manual
+ITA,Italy,ITA,Italy,name_auto
+IVB,British Virgin Islands,VGB,British Virgin Islands,name_auto
+JAM,Jamaica,JAM,Jamaica,name_auto
+JOR,Jordan,JOR,Jordan,name_auto
+JPN,Japan,JPN,Japan,name_auto
+KAZ,Kazakhstan,KAZ,Kazakhstan,name_auto
+KEN,Kenya,KEN,Kenya,name_auto
+KGZ,Kyrgyzstan,KGZ,Kyrgyz Republic,manual
+KIR,Kiribati,KIR,Kiribati,name_auto
+KOR,Republic of Korea,KOR,"Korea, Rep.",manual
+KOS,Kosovo,XKX,Kosovo,name_auto
+KSA,Kingdom of Saudi Arabia,SAU,Saudi Arabia,manual
+KUW,Kuwait,KWT,Kuwait,name_auto
+LAO,Lao People's Democratic Republic,LAO,Lao PDR,manual
+LAT,Latvia,LVA,Latvia,name_auto
+LBA,Libya,LBY,Libya,name_auto
+LBN,Lebanon,LBN,Lebanon,name_auto
+LBR,Liberia,LBR,Liberia,name_auto
+LCA,Saint Lucia,LCA,St. Lucia,manual
+LES,Lesotho,LSO,Lesotho,name_auto
+LIE,Liechtenstein,LIE,Liechtenstein,name_auto
+LTU,Lithuania,LTU,Lithuania,name_auto
+LUX,Luxembourg,LUX,Luxembourg,name_auto
+MAD,Madagascar,MDG,Madagascar,name_auto
+MAL,Malaya,,,historic
+MAR,Morocco,MAR,Morocco,name_auto
+MAS,Malaysia,MYS,Malaysia,name_auto
+MAW,Malawi,MWI,Malawi,name_auto
+MDA,Republic of Moldova,MDA,Moldova,manual
+MDV,Maldives,MDV,Maldives,name_auto
+MEX,Mexico,MEX,Mexico,name_auto
+MGL,Mongolia,MNG,Mongolia,name_auto
+MHL,Marshall Islands,MHL,Marshall Islands,name_auto
+MIX,Mixed team,,,historic
+MKD,North Macedonia,MKD,North Macedonia,name_auto
+MLI,Mali,MLI,Mali,name_auto
+MLT,Malta,MLT,Malta,name_auto
+MNE,Montenegro,MNE,Montenegro,name_auto
+MON,Monaco,MCO,Monaco,name_auto
+MOZ,Mozambique,MOZ,Mozambique,name_auto
+MRI,Mauritius,MUS,Mauritius,name_auto
+MTN,Mauritania,MRT,Mauritania,name_auto
+MYA,Myanmar,MMR,Myanmar,name_auto
+NAM,Namibia,NAM,Namibia,name_auto
+NBO,North Borneo,,,historic
+NCA,Nicaragua,NIC,Nicaragua,name_auto
+NED,Netherlands,NLD,Netherlands,name_auto
+NEP,Nepal,NPL,Nepal,name_auto
+NFL,Newfoundland,,,historic
+NGR,Nigeria,NGA,Nigeria,name_auto
+NIG,Niger,NER,Niger,name_auto
+NOR,Norway,NOR,Norway,name_auto
+NRU,Nauru,NRU,Naoero,manual
+NZL,New Zealand,NZL,New Zealand,name_auto
+OMA,Oman,OMN,Oman,name_auto
+PAK,Pakistan,PAK,Pakistan,name_auto
+PAN,Panama,PAN,Panama,name_auto
+PAR,Paraguay,PRY,Paraguay,name_auto
+PER,Peru,PER,Peru,name_auto
+PHI,Philippines,PHL,Philippines,name_auto
+PLE,Palestine,PSE,West Bank and Gaza,manual
+PLW,Palau,PLW,Palau,name_auto
+PNG,Papua New Guinea,PNG,Papua New Guinea,name_auto
+POL,Poland,POL,Poland,name_auto
+POR,Portugal,PRT,Portugal,name_auto
+PRK,Democratic People's Republic of Korea,PRK,"Korea, Dem. People's Rep.",manual
+PUR,Puerto Rico,PRI,Puerto Rico (US),manual
+QAT,Qatar,QAT,Qatar,name_auto
+RHO,Rhodesia,,,historic
+ROC,Russian Olympic Committee,,,historic
+ROU,Romania,ROU,Romania,name_auto
+RSA,South Africa,ZAF,South Africa,name_auto
+RUS,Russian Federation,RUS,Russian Federation,name_auto
+RWA,Rwanda,RWA,Rwanda,name_auto
+SAA,Saar,,,historic
+SAM,Samoa,WSM,Samoa,name_auto
+SCG,Serbia and Montenegro,,,historic
+SEN,Senegal,SEN,Senegal,name_auto
+SEY,Seychelles,SYC,Seychelles,name_auto
+SGP,Singapore,SGP,Singapore,name_auto
+SKN,Saint Kitts and Nevis,KNA,St. Kitts and Nevis,manual
+SLE,Sierra Leone,SLE,Sierra Leone,name_auto
+SLO,Slovenia,SVN,Slovenia,name_auto
+SMR,San Marino,SMR,San Marino,name_auto
+SOL,Solomon Islands,SLB,Solomon Islands,name_auto
+SOM,Somalia,SOM,"Somalia, Fed. Rep.",manual
+SRB,Serbia,SRB,Serbia,name_auto
+SRI,Sri Lanka,LKA,Sri Lanka,name_auto
+SSD,South Sudan,SSD,South Sudan,name_auto
+STP,São Tomé and Príncipe,STP,Sao Tome and Principe,name_auto
+SUD,Sudan,SDN,Sudan,name_auto
+SUI,Switzerland,CHE,Switzerland,name_auto
+SUR,Suriname,SUR,Suriname,name_auto
+SVK,Slovakia,SVK,Slovak Republic,manual
+SWE,Sweden,SWE,Sweden,name_auto
+SWZ,Eswatini,SWZ,Eswatini,name_auto
+SYR,Syrian Arab Republic,SYR,Syrian Arab Republic,name_auto
+TAN,United Republic of Tanzania,TZA,Tanzania,manual
+TCH,Czechoslovakia,,,historic
+TGA,Tonga,TON,Tonga,name_auto
+THA,Thailand,THA,Thailand,name_auto
+TJK,Tajikistan,TJK,Tajikistan,name_auto
+TKM,Turkmenistan,TKM,Turkmenistan,name_auto
+TLS,Timor-Leste,TLS,Timor-Leste,name_auto
+TOG,Togo,TGO,Togo,name_auto
+TPE,Chinese Taipei,,,no_wb_data
+TTO,Trinidad and Tobago,TTO,Trinidad and Tobago,name_auto
+TUN,Tunisia,TUN,Tunisia,name_auto
+TUR,Türkiye,TUR,Turkiye,name_auto
+TUV,Tuvalu,TUV,Tuvalu,name_auto
+UAE,United Arab Emirates,ARE,United Arab Emirates,name_auto
+UAR,United Arab Republic,,,historic
+UGA,Uganda,UGA,Uganda,name_auto
+UKR,Ukraine,UKR,Ukraine,name_auto
+UNK,Unknown,,,historic
+URS,Soviet Union,,,historic
+URU,Uruguay,URY,Uruguay,name_auto
+USA,United States,USA,United States,name_auto
+UZB,Uzbekistan,UZB,Uzbekistan,name_auto
+VAN,Vanuatu,VUT,Vanuatu,name_auto
+VEN,Venezuela,VEN,"Venezuela, RB",manual
+VIE,Vietnam,VNM,Viet Nam,name_auto
+VIN,Saint Vincent and the Grenadines,VCT,St. Vincent and the Grenadines,manual
+VNM,South Vietnam,,,historic
+WIF,West Indies Federation,,,historic
+YAR,North Yemen,,,historic
+YEM,Yemen,YEM,"Yemen, Rep.",manual
+YMD,South Yemen,,,historic
+YUG,Yugoslavia,,,historic
+ZAM,Zambia,ZMB,Zambia,name_auto
+ZIM,Zimbabwe,ZWE,Zimbabwe,name_auto

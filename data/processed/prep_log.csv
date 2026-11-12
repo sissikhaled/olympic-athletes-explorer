@@ -1,0 +1,17 @@
+table,step,rows_before,rows_after,rows_removed,note
+games,Remove Games cancelled by war (D10),64,59,5,"1916, 1940 x2, 1944 x2"
+games,Remove future Games with no athlete data (D10),59,55,4,"2024, 2026, 2028, 2032"
+games,Drop 1906 Intercalated (D2); fold 1956 Equestrian into 1956 Summer (D3),55,53,2,
+countries,Deduplicate ROC; add IFR (found only in biographies),235,235,0,
+athletes,Parse birth dates (D5),155861,155861,0,"exact: 149,211; year only: 2,267; free text -> missing: 330; blank: 4,053"
+athletes,Parse weights (D4),155861,155861,0,approximate (range / two values) -> mean: 958
+athletes,Physique plausibility -> missing,155861,155861,0,"height outside (120, 230): 0; weight outside (25, 220): 0; BMI < 12.0: 1"
+athlete_events,Drop exact duplicate rows (D8),316834,315626,1208,
+athlete_events,Exclude Art Competitions (D1),315626,313196,2430,
+athlete_events,Drop 1906 Intercalated Games (D2),313196,313173,23,
+athlete_events,Merge 1956 Equestrian into 1956 Summer (D3),313173,313173,0,300 rows re-assigned
+athlete_events,Drop rows whose athlete has no biography,313173,313167,6,no sex/physique available for these athletes
+medal_tally,Drop 1906 Intercalated (D2),1807,1789,18,
+medal_tally,Merge 1956 Equestrian rows into 1956 Summer (D3),1789,1783,6,medals summed per country
+medal_tally,Subtract Art Competitions medals (D7),1783,1775,8,147 art medals removed; countries left with 0 medals dropped
+athlete_games,Collapse athlete-event rows to athlete x Games x sport,313167,215409,97758,one row per athlete per sport per Games
