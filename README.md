@@ -2,7 +2,7 @@
 
 An interactive dashboard (Plotly + Dash) for exploring athlete-level Olympic results from Athens 1896 to Beijing 2022, built for a university data-visualization course. See [REQUIREMENTS.md](REQUIREMENTS.md) for the assignment brief.
 
-> Status: **Phase 5b, Overview and Countries tabs complete**; other tabs follow. The full plan and progress are in [docs/project_plan.md](docs/project_plan.md). Sections marked _TBD_ are filled in during later phases.
+> Status: **Phase 5c, Overview, Countries and Physiques tabs complete**; Gender and Sport Comparison follow. The full plan and progress are in [docs/project_plan.md](docs/project_plan.md). Sections marked _TBD_ are filled in during later phases.
 
 ## Data sources
 

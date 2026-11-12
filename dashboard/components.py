@@ -11,7 +11,7 @@ FT_URL = "https://ft-interactive.github.io/visual-vocabulary/"
 
 
 def chart_card(graph_id: str, qid: str, question: str, chart: str, ft_category: str,
-               how_to_read: str, height: int = 380, selectable: bool = False,
+               how_to_read: str, height: int | None = 380, selectable: bool = False,
                controls=None) -> dbc.Card:
     """One chart = one card: question on top, chart, then a 'how to read' hint.
 
@@ -36,7 +36,8 @@ def chart_card(graph_id: str, qid: str, question: str, chart: str, ft_category: 
     body.append(dcc.Loading(
         dcc.Graph(id=graph_id, figure=empty_figure("Chart built in Phase 5", "Layout preview"),
                   config=GRAPH_CONFIG_SELECT if selectable else GRAPH_CONFIG,
-                  style={"height": f"{height}px"}),
+                  # height=None: the figure sets its own height (e.g. one row per sport)
+                  style={"height": f"{height}px"} if height else {}),
         type="dot", color="#2a78d6", delay_show=300))
     body.append(html.Div([html.Span("How to read: ", className="fw-semibold"), how_to_read],
                          className="how-to-read"))

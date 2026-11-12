@@ -244,3 +244,6 @@ Colors that are hard to read on white (yellow, aqua) are always paired with visi
 | Historic teams on the map (Phase 5b) | Own circle at the main successor's location (D15), e.g. USSR, Unified Team and ROC as separate circles at Russia |
 | Rank-based charts (Q2.2, Q2.5) | Compare one season at a time: with Season = Both they show the Summer Games, with a note |
 | Specialisation index | Zero medals in a sport are shown blank, not as "strongly weaker" |
+| Physique counting unit (Phase 5c) | Height, weight and BMI: each athlete once per sport (latest Games in the filter). Age: once per Games |
+| Minimum sample (Phase 5c) | A box or violin needs 30+ measured athletes; a Games on the trend chart needs 8+ |
+| Focus sport (Phase 5c) | Set by clicking a sport in Q3.1 or by a menu; drives Q3.2–Q3.4. The trend reference ("all sports") uses the focus sport's season only |
