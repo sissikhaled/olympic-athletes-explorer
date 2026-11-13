@@ -8,6 +8,9 @@ that distance = dissimilarity.
 """
 from __future__ import annotations
 
+import json
+from functools import lru_cache
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -18,7 +21,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
 from .. import data_access as da
-from ..components import chart_card, data_note, tab_intro
+from ..components import tab_callback, chart_card, data_note, tab_intro
 from ..theme import (DEEMPHASIS, SEASON_COLORS, SELECTION_COLORS, TEXT_MUTED, TEXT_PRIMARY, TEXT_SECONDARY,
                      empty_figure, tint)
 
@@ -75,6 +78,13 @@ def layout():
 
 # ====================================================================== profiles + PCA
 def profiles(f: dict) -> pd.DataFrame:
+    """Cached per filter: the picker, map, radar and violins all need the same profiles."""
+    return _profiles_cached(json.dumps(f, sort_keys=True)).copy()
+
+
+@lru_cache(maxsize=16)
+def _profiles_cached(f_json: str) -> pd.DataFrame:
+    f = json.loads(f_json)
     a = da.filter_athletes(f, ignore=IGNORE)
     a = a[~a.is_minor]
     if a.empty:
@@ -182,8 +192,11 @@ def fig_pca(f: dict, colors: dict[str, str]) -> go.Figure:
 def fig_radar(f: dict, colors: dict[str, str]) -> go.Figure:
     m, _, _ = pca_map(f)
     chosen = [s for s in colors if s in m.index]
-    if not chosen:
+    if not colors:
         return empty_figure("Pick 2–4 sports to compare")
+    if not chosen:
+        return empty_figure("The chosen sports have too few measured athletes here",
+                            f"Each sport needs {MIN_MEASURED}+ measured athletes in the selection.")
     feats = feature_list(f)
     labels = [FEATURES[k] for k in feats] + [FEATURES[feats[0]]]
     fig = go.Figure()
@@ -216,8 +229,11 @@ DIST_MEASURES = [("height_cm", "Height (cm)"), ("weight_kg", "Weight (kg)"), ("a
 def fig_dist(f: dict, colors: dict[str, str]) -> go.Figure:
     a = da.filter_athletes(f, ignore=IGNORE)
     chosen = [s for s in colors if s in set(a.sport)]
-    if not chosen:
+    if not colors:
         return empty_figure("Pick 2–4 sports to compare")
+    if not chosen:
+        return empty_figure("The chosen sports did not take place in this selection",
+                            "Widen the filters or pick other sports.")
     body = a.sort_values(["year", "athlete_id"], kind="stable").drop_duplicates(["athlete_id", "sport"], keep="last")
     fig = make_subplots(rows=1, cols=3, subplot_titles=[t for _, t in DIST_MEASURES], horizontal_spacing=0.07)
     for col, (measure, title) in enumerate(DIST_MEASURES, start=1):
@@ -266,7 +282,7 @@ def update_selection(current: list[str], valid: set[str], trigger: str | None,
     return sel, msg
 
 
-@callback(Output("sp-compare", "value"), Output("sp-compare", "options"), Output("sp-compare-msg", "children"),
+@tab_callback(TAB_ID, Output("sp-compare", "value"), Output("sp-compare", "options"), Output("sp-compare-msg", "children"),
           Output("sp-colors", "data"),
           Input("filters", "data"), Input("sp-compare", "value"), Input("sp-pca", "clickData"),
           Input("sp-pca", "selectedData"), State("sp-compare", "value"), State("sp-colors", "data"))
@@ -288,16 +304,16 @@ def sync_compare(f, picked, click, selected, current, colors):
     return sel, options, msg, compare_colors(sel, colors)
 
 
-@callback(Output("sp-pca", "figure"), Input("filters", "data"), Input("sp-colors", "data"))
+@tab_callback(TAB_ID, Output("sp-pca", "figure"), Input("filters", "data"), Input("sp-colors", "data"))
 def update_pca(f, colors):
     return fig_pca(f, colors or {})
 
 
-@callback(Output("sp-radar", "figure"), Input("filters", "data"), Input("sp-colors", "data"))
+@tab_callback(TAB_ID, Output("sp-radar", "figure"), Input("filters", "data"), Input("sp-colors", "data"))
 def update_radar(f, colors):
     return fig_radar(f, colors or {})
 
 
-@callback(Output("sp-dist", "figure"), Input("filters", "data"), Input("sp-colors", "data"))
+@tab_callback(TAB_ID, Output("sp-dist", "figure"), Input("filters", "data"), Input("sp-colors", "data"))
 def update_dist(f, colors):
     return fig_dist(f, colors or {})

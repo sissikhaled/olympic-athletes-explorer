@@ -83,3 +83,30 @@ def test_global_callbacks():
     options, value = cb.update_sport_options("Winter", True, ["Swimming", "Biathlon"])
     assert value == ["Biathlon"]                                # Summer sport dropped
     assert all("Swimming" != o["value"] for o in options)
+
+
+def test_failing_chart_shows_message_instead_of_breaking(monkeypatch):
+    """The safety net in tab_callback: an exception becomes an explanatory empty chart."""
+    import dash
+    from dash import Input, Output
+    from dashboard import components
+
+    registered = {}
+    monkeypatch.setattr(dash, "callback", lambda *deps, **kw: (lambda fn: registered.setdefault("fn", fn)))
+
+    @components.tab_callback("demo", Output("demo-graph", "figure"), Input("filters", "data"))
+    def broken(f):
+        raise ValueError("boom")
+
+    fig = registered["fn"]({"x": 1}, "demo")                 # Dash passes (filters, active tab)
+    assert "could not be drawn" in fig.layout.annotations[0].text
+    assert broken.__name__ == "broken"                       # original function returned unchanged
+
+
+def test_filter_bar_names_filters_and_tab_exceptions():
+    from dashboard import callbacks as cb
+    from dashboard import data_access as da
+    chips = cb.filter_chips({**da.DEFAULT_FILTERS, "season": "Winter", "sex": "Female", "countries": ["NOR", "SWE"]})
+    assert chips == ["1896–2022", "Winter Games", "Women only", "2 countries"]
+    bar = str(cb.show_filter_bar(da.DEFAULT_FILTERS, "gender"))
+    assert "Sex filter does not apply" in bar and "(filtered)" not in bar

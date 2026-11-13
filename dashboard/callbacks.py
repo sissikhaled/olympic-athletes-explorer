@@ -66,3 +66,38 @@ def show_summary(f):
           State("about-modal", "is_open"), prevent_initial_call=True)
 def toggle_about(_, is_open):
     return not is_open if ctx.triggered_id == "about-open" else is_open
+
+
+# Per-tab exceptions to the global filters (see docs/analytical_questions.md §4.1)
+TAB_EXCEPTIONS = {
+    "countries": "Selected countries are highlighted, not filtered out. Medal totals do not split by sex.",
+    "gender": "The Sex filter does not apply on this tab (it compares women and men).",
+    "sports": "The Sports filter does not apply on this tab; use the sport picker.",
+}
+
+
+def filter_chips(f: dict) -> list[str]:
+    d = da.DEFAULT_FILTERS
+    chips = [f"{f['years'][0]}–{f['years'][1]}"]
+    chips.append("Summer and Winter" if f["season"] == "Both" else f"{f['season']} Games")
+    chips.append({"All": "Women and men", "Female": "Women only", "Male": "Men only"}[f["sex"]])
+    if f["sports"]:
+        chips.append(f["sports"][0] if len(f["sports"]) == 1 else f"{len(f['sports'])} sports")
+    elif f["hide_minor"] != d["hide_minor"]:
+        chips.append("incl. minor sports")
+    if f["countries"]:
+        chips.append(f["countries"][0] if len(f["countries"]) == 1 else f"{len(f['countries'])} countries")
+    return chips
+
+
+@callback(Output("filter-bar", "children"), Input("filters", "data"), Input("tabs", "active_tab"))
+def show_filter_bar(f, tab):
+    parts = [html.Span("Showing: ", className="fw-semibold")]
+    for c in filter_chips(f):
+        parts.append(html.Span(c, className="filter-chip"))
+    if f != da.DEFAULT_FILTERS:
+        parts.append(html.Span("(filtered)", className="text-secondary small ms-1"))
+    note = TAB_EXCEPTIONS.get(tab)
+    if note:
+        parts.append(html.Div([html.Span("ⓘ ", className="text-secondary"), note], className="filter-note"))
+    return parts

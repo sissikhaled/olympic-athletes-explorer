@@ -13,7 +13,7 @@ from dash import Input, Output, State, callback, dcc, html
 import dash_bootstrap_components as dbc
 
 from .. import data_access as da
-from ..components import chart_card, data_grid, data_note, segmented, tab_intro
+from ..components import tab_callback, chart_card, data_grid, data_note, segmented, tab_intro
 from ..theme import (DEEMPHASIS, MEDAL_COLORS, SEX_COLORS, TEXT_MUTED, TEXT_SECONDARY, empty_figure,
                      tint)
 
@@ -257,9 +257,13 @@ def trend_stats(f: dict, measure: str, sport: str | None) -> pd.DataFrame:
 
 
 def fig_trend(f: dict, measure: str, focus: str | None) -> go.Figure:
+    if not focus:
+        return empty_figure("No sport to focus on",
+                            f"No sport has {MIN_N}+ measured athletes in this selection.")
     t = trend_stats(f, measure, focus)
     if t.empty:
-        return empty_figure(f"Too few measured athletes in {focus}" if focus else "No data")
+        return empty_figure(f"Too few measured athletes in {focus}",
+                            f"Each Games needs {MIN_N_TREND}+ athletes with a known value.")
     # reference = all sports of the same season only (Summer and Winter alternated before 1994)
     ref = trend_stats({**f, "season": t.season.mode().iat[0]}, measure, None)
     fig = go.Figure()
@@ -293,10 +297,14 @@ def fig_trend(f: dict, measure: str, focus: str | None) -> go.Figure:
 
 # ====================================================================== Q3.4 split violin
 def fig_violin(f: dict, measure: str, focus: str | None) -> go.Figure:
+    if not focus:
+        return empty_figure("No sport to focus on",
+                            f"No sport has {MIN_N}+ measured athletes in this selection.")
     d = physique_frame(f, measure)
     d = d[d.sport == focus]
     if len(d) < MIN_N:
-        return empty_figure(f"Too few measured athletes in {focus}")
+        return empty_figure(f"Too few measured athletes in {focus}",
+                            f"A violin needs {MIN_N}+ athletes with a known value.")
     fig = go.Figure()
     unit = UNITS[measure]
     sexes = [s for s in ["Female", "Male"] if (d.sex == s).sum() >= MIN_N]
@@ -327,7 +335,7 @@ def fig_violin(f: dict, measure: str, focus: str | None) -> go.Figure:
 
 
 # ====================================================================== callbacks
-@callback(Output("ph-sport", "options"), Output("ph-sport", "value"),
+@tab_callback(TAB_ID, Output("ph-sport", "options"), Output("ph-sport", "value"),
           Input("filters", "data"), Input("ph-boxes", "clickData"), State("ph-sport", "value"))
 def update_focus_sport(f, click, current):
     """Focus sport: set by clicking a box row, or by the menu; kept valid when filters change."""
@@ -343,24 +351,24 @@ def update_focus_sport(f, click, current):
                                                      (valid[0] if valid else None)))
 
 
-@callback(Output("ph-boxes", "figure"), Input("filters", "data"), Input("ph-measure", "value"),
+@tab_callback(TAB_ID, Output("ph-boxes", "figure"), Input("filters", "data"), Input("ph-measure", "value"),
           Input("ph-sport", "value"))
 def update_boxes(f, measure, sport):
     return fig_boxes(f, measure, sport)
 
 
-@callback(Output("ph-density", "figure"), Input("filters", "data"), Input("ph-sport", "value"))
+@tab_callback(TAB_ID, Output("ph-density", "figure"), Input("filters", "data"), Input("ph-sport", "value"))
 def update_density(f, sport):
     return fig_density(f, sport)
 
 
-@callback(Output("ph-trend", "figure"), Input("filters", "data"), Input("ph-measure", "value"),
+@tab_callback(TAB_ID, Output("ph-trend", "figure"), Input("filters", "data"), Input("ph-measure", "value"),
           Input("ph-sport", "value"))
 def update_trend(f, measure, sport):
     return fig_trend(f, measure, sport)
 
 
-@callback(Output("ph-violin", "figure"), Input("filters", "data"), Input("ph-measure", "value"),
+@tab_callback(TAB_ID, Output("ph-violin", "figure"), Input("filters", "data"), Input("ph-measure", "value"),
           Input("ph-sport", "value"))
 def update_violin(f, measure, sport):
     return fig_violin(f, measure, sport)

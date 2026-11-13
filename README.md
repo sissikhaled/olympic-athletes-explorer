@@ -2,7 +2,7 @@
 
 An interactive dashboard (Plotly + Dash) for exploring athlete-level Olympic results from Athens 1896 to Beijing 2022, built for a university data-visualization course. See [REQUIREMENTS.md](REQUIREMENTS.md) for the assignment brief.
 
-> Status: **Phase 5 complete: all five tabs work.** Next: cross-filtering polish, edge cases and performance (Phase 6). The full plan and progress are in [docs/project_plan.md](docs/project_plan.md). Sections marked _TBD_ are filled in during later phases.
+> Status: **Phase 6 complete**: all five tabs, robustness sweep, per-tab rendering. Next: final verification and demo preparation (Phase 7). The full plan and progress are in [docs/project_plan.md](docs/project_plan.md). Sections marked _TBD_ are filled in during later phases.
 
 ## Data sources
 
@@ -39,7 +39,8 @@ python app.py
 ```
 Then open http://127.0.0.1:8050. Set `DASH_DEBUG=1` for hot reload while developing, or `PORT=8051` to use another port.
 
-Run the tests with `python -m pytest`.
+Run the tests with `python -m pytest` (about 800 tests, ~45 s; most are the edge-case sweep).
+Time the server work per filter change with `python scripts/benchmark_callbacks.py`.
 
 ## Project structure
 

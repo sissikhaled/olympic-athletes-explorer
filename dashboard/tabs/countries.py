@@ -13,7 +13,7 @@ from dash import Input, Output, State, callback, ctx, dcc, html, no_update
 import dash_bootstrap_components as dbc
 
 from .. import data_access as da
-from ..components import chart_card, data_note, segmented, tab_intro
+from ..components import tab_callback, chart_card, data_note, segmented, tab_intro
 from ..theme import (DEEMPHASIS, SELECTION_COLORS, SEQUENTIAL_BLUE, TEXT_MUTED, TEXT_PRIMARY,
                      TEXT_SECONDARY, empty_figure, tint)
 
@@ -186,13 +186,13 @@ def _short(games: str) -> str:
 def fig_map(f: dict, metric: str = "total", mode: str = "range") -> go.Figure:
     cg = da.filter_country_games(f)
     colors = selection_colors(f["countries"])
+    if cg.empty or cg.total.sum() == 0:          # no Games / no medals: say that first
+        return empty_figure()
     if metric != "total":
         cg = cg[cg.year >= 1960]
         if cg.empty:
             return empty_figure("No population or GDP data before 1960",
                                 "Move the year range to 1960 or later, or switch to medal totals.")
-    if cg.empty or cg.total.sum() == 0:
-        return empty_figure()
 
     if mode == "range":
         if metric == "total":
@@ -527,18 +527,18 @@ def fig_sankey(f: dict, min_flow: int = 10) -> go.Figure:
 
 
 # ====================================================================== callbacks
-@callback(Output("co-map", "figure"), Input("filters", "data"), Input("co-map-metric", "value"),
+@tab_callback(TAB_ID, Output("co-map", "figure"), Input("filters", "data"), Input("co-map-metric", "value"),
           Input("co-map-mode", "value"))
 def update_map(f, metric, mode):
     return fig_map(f, metric, mode)
 
 
-@callback(Output("co-bump", "figure"), Input("filters", "data"))
+@tab_callback(TAB_ID, Output("co-bump", "figure"), Input("filters", "data"))
 def update_bump(f):
     return fig_bump(f)
 
 
-@callback(Output("co-scatter-games", "options"), Output("co-scatter-games", "value"),
+@tab_callback(TAB_ID, Output("co-scatter-games", "options"), Output("co-scatter-games", "value"),
           Input("filters", "data"), State("co-scatter-games", "value"))
 def update_scatter_games(f, current):
     options, default = scatter_games_options(f)
@@ -546,22 +546,22 @@ def update_scatter_games(f, current):
     return options, (current if current in valid else default)
 
 
-@callback(Output("co-scatter", "figure"), Input("filters", "data"), Input("co-scatter-games", "value"))
+@tab_callback(TAB_ID, Output("co-scatter", "figure"), Input("filters", "data"), Input("co-scatter-games", "value"))
 def update_scatter(f, edition_id):
     return fig_scatter(f, edition_id)
 
 
-@callback(Output("co-heatmap", "figure"), Input("filters", "data"), Input("co-heat-metric", "value"))
+@tab_callback(TAB_ID, Output("co-heatmap", "figure"), Input("filters", "data"), Input("co-heat-metric", "value"))
 def update_heatmap(f, metric):
     return fig_heatmap(f, metric)
 
 
-@callback(Output("co-host", "figure"), Input("filters", "data"))
+@tab_callback(TAB_ID, Output("co-host", "figure"), Input("filters", "data"))
 def update_host(f):
     return fig_host(f)
 
 
-@callback(Output("co-sankey", "figure"), Input("filters", "data"), Input("co-sankey-min", "value"))
+@tab_callback(TAB_ID, Output("co-sankey", "figure"), Input("filters", "data"), Input("co-sankey-min", "value"))
 def update_sankey(f, min_flow):
     return fig_sankey(f, min_flow or 10)
 

@@ -1,6 +1,8 @@
 """Reusable layout pieces: chart cards, tab headers, filter controls."""
 from __future__ import annotations
 
+import logging
+
 from dash import dcc, html
 import dash_ag_grid as dag
 import dash_bootstrap_components as dbc
@@ -34,7 +36,7 @@ def chart_card(graph_id: str, qid: str, question: str, chart: str, ft_category: 
     if controls is not None:
         body.append(html.Div(controls, className="card-controls"))
     body.append(dcc.Loading(
-        dcc.Graph(id=graph_id, figure=empty_figure("Chart built in Phase 5", "Layout preview"),
+        dcc.Graph(id=graph_id, figure=empty_figure("Loading chart…", ""),
                   config=GRAPH_CONFIG_SELECT if selectable else GRAPH_CONFIG,
                   # height=None: the figure sets its own height (e.g. one row per sport)
                   style={"height": f"{height}px"} if height else {}),
@@ -87,3 +89,43 @@ def medal_badges(counts: dict) -> html.Span:
                         style={"backgroundColor": MEDAL_COLORS[m]}, title=f"{counts[m]} {m.lower()}")
               for m in MEDAL_ORDER if counts.get(m, 0)]
     return html.Span(badges or "–", className="text-nowrap")
+
+
+def tab_callback(tab_id: str, *deps, **kwargs):
+    """Register a Dash callback that only does its work while `tab_id` is the visible tab.
+
+    It adds Input("tabs", "active_tab") after the callback's own Inputs. While another tab
+    is shown the update is skipped; switching to the tab fires it with the current filters,
+    so nothing goes stale. The undecorated function is returned unchanged, so tests and
+    scripts can still call it directly.
+    """
+    from dash import Input as _Input, State as _State, callback as _callback
+    from dash.exceptions import PreventUpdate
+
+    flat = []
+    for d in deps:
+        flat.extend(d if isinstance(d, (list, tuple)) else [d])
+    outputs = [d for d in flat if not isinstance(d, (_Input, _State))]
+    inputs = [d for d in flat if isinstance(d, _Input)]
+    states = [d for d in flat if isinstance(d, _State)]
+    pos = len(inputs)                                  # where the active tab arrives in *args
+    single_figure = len(outputs) == 1 and getattr(outputs[0], "component_property", None) == "figure"
+
+    def deco(fn):
+        def dash_fn(*args):
+            if args[pos] != tab_id:
+                raise PreventUpdate
+            try:
+                return fn(*args[:pos], *args[pos + 1:])
+            except PreventUpdate:
+                raise
+            except Exception:                          # safety net: one chart fails, the page lives
+                logging.getLogger("dashboard").exception("callback %s failed", fn.__name__)
+                if single_figure:
+                    return empty_figure("This chart could not be drawn",
+                                        "Try other filters; the error was logged on the server.")
+                raise
+        dash_fn.__name__ = f"{fn.__name__}_on_{tab_id}"
+        _callback(*outputs, *inputs, _Input("tabs", "active_tab"), *states, **kwargs)(dash_fn)
+        return fn
+    return deco

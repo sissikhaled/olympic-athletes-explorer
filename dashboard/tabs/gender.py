@@ -13,7 +13,7 @@ from dash import Input, Output, State, callback, ctx, dcc, html
 import dash_bootstrap_components as dbc
 
 from .. import data_access as da
-from ..components import chart_card, data_note, tab_intro
+from ..components import tab_callback, chart_card, data_note, tab_intro
 from ..theme import (SEASON_COLORS, SELECTION_COLORS, SEX_COLORS, TEXT_MUTED, TEXT_PRIMARY,
                      TEXT_SECONDARY, empty_figure)
 
@@ -157,7 +157,10 @@ def heatmap_data(f: dict) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 def fig_heatmap(f: dict, sport: str | None = None) -> go.Figure:
     share, w, n = heatmap_data(f)
     if share.empty:
-        return empty_figure()
+        if da.filter_athletes(f, ignore=IGNORE).empty:
+            return empty_figure()
+        return empty_figure("Too few athletes per sport and decade",
+                            f"Each cell needs {MIN_CELL}+ athletes; widen the filters.")
     labels = [f"{d}s" for d in share.columns]
     ylabels = [f"<b>{s}</b>" if s == sport else s for s in share.index]
     custom = np.dstack([w.fillna(0).values, n.fillna(0).values,
@@ -291,21 +294,21 @@ def follow_sport(click, _clear, current):
     return sport, sport
 
 
-@callback(Output("ge-share", "figure"), Input("filters", "data"), Input("ge-sport", "data"))
+@tab_callback(TAB_ID, Output("ge-share", "figure"), Input("filters", "data"), Input("ge-sport", "data"))
 def update_share(f, sport):
     return fig_share(f, sport)
 
 
-@callback(Output("ge-heatmap", "figure"), Input("filters", "data"), Input("ge-sport", "data"))
+@tab_callback(TAB_ID, Output("ge-heatmap", "figure"), Input("filters", "data"), Input("ge-sport", "data"))
 def update_heatmap(f, sport):
     return fig_heatmap(f, sport)
 
 
-@callback(Output("ge-spine", "figure"), Input("filters", "data"))
+@tab_callback(TAB_ID, Output("ge-spine", "figure"), Input("filters", "data"))
 def update_spine(f):
     return fig_spine(f)
 
 
-@callback(Output("ge-pyramid", "figure"), Input("filters", "data"), Input("ge-sport", "data"))
+@tab_callback(TAB_ID, Output("ge-pyramid", "figure"), Input("filters", "data"), Input("ge-sport", "data"))
 def update_pyramid(f, sport):
     return fig_pyramid(f, sport)

@@ -252,3 +252,7 @@ Colors that are hard to read on white (yellow, aqua) are always paired with visi
 | DNS-only athletes (Phase 5d) | Not counted as participants (D16), applied to every tab |
 | Sport similarity (Phase 5e) | PCA on standardised sport profiles (mean height, weight, BMI, age, % women), recomputed for the filters. Axes are named automatically from their strongest loadings (default: axis 1 = size, 57 %; axis 2 = age, 18 %). With a Sex filter set, % women is dropped |
 | Compared sports (Phase 5e) | 2–4 sports; a 5th click drops the oldest pick (with a message); a lasso keeps the 4 largest sports. Each sport keeps its colour while it stays selected; a newcomer takes a freed colour |
+| Robustness (Phase 6) | Automated sweep: 17 awkward filter combinations × 42 chart variants (714 cases) must never raise; empty states must name the real reason |
+| Performance (Phase 6) | Only the visible tab recomputes on a filter change (`tab_callback`); filtered rows and sport profiles cached per filter |
+| Safety net (Phase 6) | If a chart callback ever fails, the card shows "This chart could not be drawn" and the error is logged; the rest of the page keeps working |
+| Filter bar (Phase 6) | A line above the tabs always states the active filters and the current tab's exceptions |

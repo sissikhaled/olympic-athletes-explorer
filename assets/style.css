@@ -111,3 +111,9 @@ a:hover, .btn-link:hover { color: #1c5cab; }
 .athlete-card { border: 1px solid var(--card-border); border-left: 4px solid var(--accent); }
 .ag-theme-quartz { --ag-font-family: Inter, -apple-system, "Segoe UI", sans-serif; --ag-font-size: 13px;
                    --ag-active-color: #2a78d6; --ag-selected-row-background-color: #eef4fc; }
+
+/* active-filter bar above the tabs */
+.filter-bar { font-size: 12.5px; color: var(--text-secondary); margin: 0 0 8px; line-height: 1.9; }
+.filter-chip { display: inline-block; background: #eef4fc; color: #1c5cab; border-radius: 10px;
+               padding: 0 9px; margin-right: 5px; }
+.filter-note { color: var(--text-secondary); font-size: 12px; }

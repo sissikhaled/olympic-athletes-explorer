@@ -8,6 +8,7 @@ and the Countries tab highlights countries instead of filtering them.
 """
 from __future__ import annotations
 
+import json
 from functools import lru_cache
 from pathlib import Path
 
@@ -75,9 +76,18 @@ def _mask(df: pd.DataFrame, f: dict, ignore: tuple[str, ...]) -> pd.Series:
 
 
 def filter_athletes(f: dict, ignore: tuple[str, ...] = ()) -> pd.DataFrame:
-    """athlete_games (one row per athlete x Games x sport) with the filters applied."""
+    """athlete_games (one row per athlete x Games x sport) with the filters applied.
+
+    Cached: one filter change makes several charts ask for the same rows. Callers treat
+    the result as read-only (they derive new frames with [], assign, merge ...).
+    """
+    return _filter_athletes_cached(json.dumps(f, sort_keys=True), tuple(sorted(ignore)))
+
+
+@lru_cache(maxsize=32)
+def _filter_athletes_cached(f_json: str, ignore: tuple[str, ...]) -> pd.DataFrame:
     df = table("athlete_games")
-    return df[_mask(df, f, ignore)]
+    return df[_mask(df, json.loads(f_json), ignore)]
 
 
 def filter_events(f: dict, ignore: tuple[str, ...] = ()) -> pd.DataFrame:

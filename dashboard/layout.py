@@ -98,6 +98,7 @@ def serve_layout() -> html.Div:
     return html.Div([
         dcc.Store(id="filters", data=da.DEFAULT_FILTERS),
         header,
-        html.Div([sidebar(), html.Main([tabs, footer], className="content")], className="app-body"),
+        html.Div([sidebar(), html.Main([html.Div(id="filter-bar", className="filter-bar"), tabs, footer],
+                                       className="content")], className="app-body"),
         about_modal(),
     ])

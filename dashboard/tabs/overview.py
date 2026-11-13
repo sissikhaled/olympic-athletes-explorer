@@ -15,7 +15,7 @@ import dash_bootstrap_components as dbc
 from plotly.subplots import make_subplots
 
 from .. import data_access as da
-from ..components import chart_card, data_grid, medal_badges, tab_intro
+from ..components import tab_callback, chart_card, data_grid, medal_badges, tab_intro
 from ..theme import (SEASON_COLORS, SEX_COLORS, TEXT_MUTED, TEXT_PRIMARY, TEXT_SECONDARY,
                      empty_figure, tint)
 
@@ -161,7 +161,9 @@ def fig_participation(f: dict, sport: str | None = None) -> go.Figure:
                     continue
                 share = (part[sex].astype(float) / total.loc[run] * 100).round(1)
                 fig.add_trace(go.Scatter(
-                    x=run, y=part[sex], name=SEX_LABEL[sex], stackgroup=f"{season}-{i}", mode="lines",
+                    # a lone Games has no area to fill, so it is drawn as markers
+                    x=run, y=part[sex], name=SEX_LABEL[sex], stackgroup=f"{season}-{i}",
+                    mode="lines" if len(run) > 1 else "lines+markers", marker=dict(size=10),
                     line=dict(width=1.2, color=SEX_COLORS[sex]), fillcolor=SEX_COLORS[sex],
                     legendgroup=sex, showlegend=(col == 1 and i == 0), customdata=share,
                     hovertemplate=f"<b>%{{x}} {season}</b><br>{SEX_LABEL[sex]}: %{{y:,}} "
@@ -326,7 +328,7 @@ def athlete_card(athlete_id: int) -> html.Div:
 
 
 # ====================================================================== callbacks
-@callback([Output(i, "children") for i, _ in KPIS]
+@tab_callback(TAB_ID, [Output(i, "children") for i, _ in KPIS]
           + [Output(f"{i}-delta", "children") for i, _ in KPIS]
           + [Output("kpi-context", "children")],
           Input("filters", "data"))
@@ -345,17 +347,17 @@ def update_kpis(f):
     return values + deltas + [context]
 
 
-@callback(Output("ov-participation", "figure"), Input("filters", "data"), Input("ov-treemap", "clickData"))
+@tab_callback(TAB_ID, Output("ov-participation", "figure"), Input("filters", "data"), Input("ov-treemap", "clickData"))
 def update_participation(f, click):
     return fig_participation(f, sport_from_click(click))
 
 
-@callback(Output("ov-treemap", "figure"), Input("filters", "data"))
+@tab_callback(TAB_ID, Output("ov-treemap", "figure"), Input("filters", "data"))
 def update_treemap(f):
     return fig_treemap(f)
 
 
-@callback(Output("ov-athlete-table", "rowData"), Output("ov-athlete-table", "columnDefs"),
+@tab_callback(TAB_ID, Output("ov-athlete-table", "rowData"), Output("ov-athlete-table", "columnDefs"),
           Output("ov-search-info", "children"),
           Input("filters", "data"), Input("ov-search", "value"))
 def update_athlete_table(f, query):
