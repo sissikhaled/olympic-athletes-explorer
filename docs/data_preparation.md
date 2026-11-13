@@ -206,11 +206,11 @@ python -m pytest                    # 15 tests on the rules and the outputs
 |---|---:|---|---|
 | `athlete_games` | 212,316 | athlete × Games × sport (started at least one event) | physique, age, gender, sport comparison, athlete search |
 | `athlete_events` | 313,167 | athlete × event | event-level detail, results status |
-| `country_games` | 4,192 | country × Games | map, rankings, medals vs GDP/population |
+| `country_games` | 4,190 | country × Games | map, rankings, medals vs GDP/population |
 | `medals_by_sport` | 7,785 | country × Games × sport | country × sport specialisation |
 | `sport_profiles` | 111 | sport | sport similarity map |
 | `sports` | 111 | sport | sport filter metadata |
-| `participation` | 106 | Games × sex | participation and gender trends |
+| `participation` | 105 | Games × sex | participation and gender trends |
 | `athletes` | 155,861 | athlete | biography lookups |
 | `games`, `countries` | 53 / 235 | dimension tables | labels, host info, ISO3 |
 
