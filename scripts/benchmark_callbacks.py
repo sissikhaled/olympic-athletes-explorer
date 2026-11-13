@@ -1,4 +1,4 @@
-"""Time the server work behind one sidebar filter change, per tab.
+"""Time the server work behind one filter change, per tab.
 
 Usage:  python scripts/benchmark_callbacks.py
 """
@@ -14,17 +14,14 @@ from dashboard.tabs import countries as co, gender as ge, overview as ov, physiq
 
 COLORS = sp.compare_colors(sp.DEFAULT_COMPARE)
 TABS = {
-    "Overview": lambda f: [ov.update_kpis(f), ov.update_participation(f, None), ov.update_treemap(f),
-                           ov.update_athlete_table(f, None)],
-    "Countries": lambda f: [co.update_map(f, "total", "range"), co.update_bump(f),
+    "Overview": lambda f: [ov.update_kpis(f), ov.update_treemap(f), ov.update_athlete_table(f, None)],
+    "Countries": lambda f: [co.update_map(f, "total", "range"),
                             co.update_scatter(f, co.scatter_games_options(f)[1]), co.update_heatmap(f, "count"),
-                            co.update_host(f), co.update_sankey(f, 10)],
-    "Physiques": lambda f: [ph.update_focus_sport(f, None, "Basketball"), ph.update_boxes(f, "height_cm", "Basketball"),
-                            ph.update_density(f, "Basketball"), ph.update_trend(f, "height_cm", "Basketball"),
-                            ph.update_violin(f, "height_cm", "Basketball")],
-    "Gender": lambda f: [ge.update_share(f, None), ge.update_heatmap(f, None), ge.update_spine(f),
-                         ge.update_pyramid(f, None)],
-    "Sports": lambda f: [sp.update_pca(f, COLORS), sp.update_radar(f, COLORS), sp.update_dist(f, COLORS)],
+                            co.update_host(f)],
+    "Physiques": lambda f: [ph.update_focus_sport(f, "Basketball"), ph.update_density(f, "Basketball"),
+                            ph.update_trend(f, "height_cm", "Basketball"), ph.update_violin(f, "height_cm", "Basketball")],
+    "Gender": lambda f: [ge.update_share(f, None), ge.update_timeline(f, None), ge.update_spine(f)],
+    "Sports": lambda f: [sp.update_pca(f, COLORS), sp.update_dist(f, COLORS)],
 }
 SCENARIOS = {"default": da.DEFAULT_FILTERS,
              "winter": {**da.DEFAULT_FILTERS, "season": "Winter"},

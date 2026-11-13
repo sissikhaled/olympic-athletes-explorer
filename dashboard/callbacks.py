@@ -1,4 +1,4 @@
-"""Global callbacks: sidebar -> filter store, reset, dependent options, About."""
+"""Global callbacks: filter panel -> filter store, reset, dependent options, panel toggle, About."""
 from dash import Input, Output, State, callback, ctx, html, no_update
 
 from . import data_access as da
@@ -60,6 +60,31 @@ def show_summary(f):
         return html.Span("No athletes match these filters.", className="text-danger")
     return [html.B(f"{s['athletes']:,}"), " athletes · ", html.B(s["games"]), " Games · ",
             html.B(s["countries"]), " countries · ", html.B(s["sports"]), " sports"]
+
+
+@callback(Output("filter-panel", "className"), Input("filter-open", "n_clicks"),
+          Input("filter-close", "n_clicks"), State("filter-panel", "className"), prevent_initial_call=True)
+def toggle_filter_panel(_open, _close, current):
+    return panel_class(ctx.triggered_id, current)
+
+
+def panel_class(trigger: str | None, current: str | None) -> str:
+    """The round button toggles the panel; the × closes it."""
+    is_open = "open" in (current or "").split()
+    is_open = False if trigger == "filter-close" else not is_open
+    return "filter-panel open" if is_open else "filter-panel"
+
+
+def active_filter_count(f: dict) -> int:
+    d = da.DEFAULT_FILTERS
+    return sum([f["years"] != d["years"], f["season"] != d["season"], f["sex"] != d["sex"],
+                bool(f["sports"]) or f["hide_minor"] != d["hide_minor"], bool(f["countries"])])
+
+
+@callback(Output("filter-count", "children"), Output("filter-count", "className"), Input("filters", "data"))
+def show_filter_count(f):
+    n = active_filter_count(f)
+    return (str(n), "fab-badge") if n else ("", "fab-badge d-none")
 
 
 @callback(Output("about-modal", "is_open"), Input("about-open", "n_clicks"),

@@ -1,6 +1,6 @@
-"""Tab 4, Gender Participation: how did women enter the Games? (Q4.1-Q4.4)
+"""Tab 4, Gender Participation: how did women enter the Games? (Q4.1-Q4.3)
 
-The sidebar's Sex filter is ignored here (this tab compares the sexes); all
+The Sex filter is ignored here (this tab compares the sexes); all
 other filters apply. Counts are distinct athletes who started at least one
 event (decision D16).
 """
@@ -22,8 +22,7 @@ LABEL = "Gender"
 IGNORE = ("sex",)
 SEX_LABEL = {"Female": "Women", "Male": "Men"}
 TOP_COUNTRIES = 25
-MIN_CELL = 10             # heatmap cells with fewer athletes are left blank
-AGE_MIN, AGE_MAX = 12, 50  # pyramid range; older ages pooled into "50+"
+MEN_YEARS = "#c9c8c2"     # timeline: years a sport was held for men only
 
 # Milestones verified against the data (Phase 5d): (season, year, label)
 MILESTONES = [
@@ -37,43 +36,41 @@ MILESTONES = [
 ]
 # label offsets (pixels) where default placement would collide
 LABEL_OFFSETS = {("Summer", 2004): (-95, -14), ("Summer", 2012): (-40, -58), ("Winter", 2014): (10, 40)}
-# female share 0 % = men only (aqua) ... 50 % = parity (gray) ... 100 % = women only (violet)
-SHARE_SCALE = [[0.0, SEX_COLORS["Male"]], [0.5, "#ecebe7"], [1.0, SEX_COLORS["Female"]]]
 
 
 # ====================================================================== layout
+NO_SPORT = "none: click a sport in Q4.2"
+
+
 def layout():
     return html.Div([
         dcc.Store(id="ge-sport"),
         tab_intro("How did women enter the Games?",
-                  "From the first women in 1900 (2 % of athletes) to 48 % in 2020: the overall trend, the sports "
-                  "and countries behind it, and the age structure of women and men. The sidebar's Sex filter "
-                  "does not apply here, because this tab compares the sexes."),
+                  "From the first women in 1900 (2 % of athletes) to 48 % in 2020: the overall trend, when each "
+                  "sport opened to women, and which countries send balanced teams. The Sex filter does not "
+                  "apply here, because this tab compares the sexes."),
         html.Div([html.Span("Following sport: ", className="small text-secondary"),
-                  html.Span("none: click a sport in Q4.2", id="ge-sport-label", className="small fw-semibold me-2"),
+                  html.Span(NO_SPORT, id="ge-sport-label", className="small fw-semibold me-2"),
                   dbc.Button("Clear", id="ge-sport-clear", size="sm", color="link", className="p-0 align-baseline")],
                  className="mb-2"),
         chart_card("ge-share", "Q4.1", "How did women's share of athletes evolve?",
                    "Annotated line", "Change v Time",
                    "Share of women among all athletes at each Games, Summer and Winter. Dashed line = parity "
-                   "(50 %). Labels mark milestones. A sport clicked in Q4.2 is added as a third line.",
+                   "(50 %). Labels mark milestones. A sport clicked in Q4.2 is added as a dotted line.",
                    height=420),
-        chart_card("ge-heatmap", "Q4.2", "Which sports opened to women early or late, and which remain unbalanced?",
-                   "XY-heatmap, diverging scale", "Correlation · Deviation",
-                   "Each cell = one sport in one decade. Violet = mostly women, aqua = mostly men, gray = "
-                   "balanced; blank = not held (or under 10 athletes). Sports are ordered by the decade women "
-                   "first took part. Click a cell to follow that sport.", height=None),
         dbc.Row([
+            dbc.Col(chart_card("ge-timeline", "Q4.2", "When did each sport open to women, and how balanced is it now?",
+                               "Timeline (Priestley)", "Change v Time",
+                               "Each row is a sport, from its first to its latest Games: gray = men only, violet = "
+                               "women also compete. The dot marks the first Games with women; the number is the "
+                               "share of women at the latest Games. Click a sport to follow it in Q4.1.",
+                               height=None), lg=7),
             dbc.Col(chart_card("ge-spine", "Q4.3", "Which countries send balanced teams?",
                                "Spine chart", "Deviation",
                                "Each row is one country's athletes: women extend left from the centre line, men "
                                "right. A balanced team reaches the dashed 50 % mark on both sides. 25 largest "
                                "teams in the selection, most unbalanced at the top.",
-                               height=640), lg=6),
-            dbc.Col(chart_card("ge-pyramid", "Q4.4", "Do female and male Olympians differ in age structure?",
-                               "Population pyramid", "Distribution",
-                               "Women to the left, men to the right; each bar is one year of age as % of that sex "
-                               "(each Games counted). Lines mark the median ages.", height=640), lg=6),
+                               height=700), lg=5),
         ], className="g-3 my-1"),
         data_note("Counts are distinct athletes who started at least one event; an athlete in two sports counts "
                   "once in totals and once in each sport."),
@@ -133,59 +130,111 @@ def fig_share(f: dict, sport: str | None = None) -> go.Figure:
     return fig
 
 
-# ====================================================================== Q4.2 heatmap
-def heatmap_data(f: dict) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """female share %, women count, total count per sport x decade."""
+# ====================================================================== Q4.2 timeline
+def timeline_data(f: dict) -> pd.DataFrame:
+    """One row per sport: first and latest Games, first Games with women, share of women at the latest Games."""
     a = da.filter_athletes(f, ignore=IGNORE)
+    if a.empty:
+        return pd.DataFrame()
     u = a.drop_duplicates(["athlete_id", "edition_id", "sport"])
-    g = u.groupby(["sport", "decade"]).agg(n=("athlete_id", "size"), women=("is_female", "sum")).reset_index()
-    if g.empty:
-        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
-    n = g.pivot(index="sport", columns="decade", values="n")
-    w = g.pivot(index="sport", columns="decade", values="women")
-    share = (w / n * 100).where(n >= MIN_CELL)
-    share = share.dropna(how="all")
-    if share.empty:
-        return share, share, share
-    # order: decade women first took part (women-only-never last), then current share
-    first = (w.loc[share.index] > 0).idxmax(axis=1).where((w.loc[share.index] > 0).any(axis=1), 9999)
-    latest = share.ffill(axis=1).iloc[:, -1]
-    order = pd.DataFrame({"first": first, "latest": -latest}).sort_values(["first", "latest"]).index
-    return share.loc[order], w.loc[order, share.columns], n.loc[order, share.columns]
+    g = (u.groupby(["sport", "season", "year"]).agg(n=("athlete_id", "size"), women=("is_female", "sum"))
+          .reset_index())
+    # only sports still held at the end of the period (within the last two Games of their season):
+    # long-gone sports such as tug-of-war add rows but say nothing about women's entry
+    games = g.drop_duplicates(["season", "year"]).sort_values("year")
+    cutoff = games.groupby("season").year.apply(lambda y: y.iloc[-2] if len(y) > 1 else y.iloc[-1])
+    rows, dropped = [], 0
+    for sport, d in g.groupby("sport"):
+        d = d.sort_values("year")
+        if d.year.iloc[-1] < cutoff[d.season.iloc[-1]]:
+            dropped += 1
+            continue
+        with_women = d[d.women > 0]
+        last = d.iloc[-1]
+        rows.append({"sport": sport, "first": int(d.year.iloc[0]), "last": int(last.year),
+                     "women_from": int(with_women.year.iloc[0]) if len(with_women) else None,
+                     "share_now": last.women / last.n * 100, "n_now": int(last.n), "women_now": int(last.women),
+                     "women_only": bool((d.women == d.n).all())})
+    t = pd.DataFrame(rows)
+    if t.empty:
+        return t
+    t.attrs["dropped"] = dropped
+    # order: when women first took part (never = last), then current share
+    t["order_key"] = t.women_from.fillna(9999)
+    out = t.sort_values(["order_key", "share_now"], ascending=[True, False]).drop(columns="order_key")
+    out.attrs["dropped"] = dropped
+    return out.reset_index(drop=True)
 
 
-def fig_heatmap(f: dict, sport: str | None = None) -> go.Figure:
-    share, w, n = heatmap_data(f)
-    if share.empty:
-        if da.filter_athletes(f, ignore=IGNORE).empty:
-            return empty_figure()
-        return empty_figure("Too few athletes per sport and decade",
-                            f"Each cell needs {MIN_CELL}+ athletes; widen the filters.")
-    labels = [f"{d}s" for d in share.columns]
-    ylabels = [f"<b>{s}</b>" if s == sport else s for s in share.index]
-    custom = np.dstack([w.fillna(0).values, n.fillna(0).values,
-                        np.broadcast_to(np.array(share.index)[:, None], share.shape)])
-    fig = go.Figure(go.Heatmap(
-        z=share.values, x=labels, y=ylabels, zmin=0, zmax=100, colorscale=SHARE_SCALE, xgap=1, ygap=1,
-        customdata=custom, hoverongaps=False,
-        colorbar=dict(title=dict(text="women", font=dict(size=11)), ticksuffix=" %", thickness=12,
-                      tickvals=[0, 25, 50, 75, 100], lenmode="pixels", len=220, y=1, yanchor="top"),
-        hovertemplate="<b>%{customdata[2]}</b> · %{x}<br>%{z:.0f} % women<br>"
-                      "%{customdata[0]:,} women of %{customdata[1]:,} athletes<extra></extra>"))
-    fig.update_yaxes(autorange="reversed", showgrid=False, tickfont=dict(size=11), automargin=True)
-    fig.update_xaxes(side="top", showgrid=False)
-    fig.update_layout(height=max(360, 17 * len(share) + 90), margin=dict(t=50, l=10, r=10, b=10),
-                      plot_bgcolor="#f5f4f1")
+def _status(r) -> str:
+    if r.women_only:
+        return "women only"
+    if r.women_from is None or pd.isna(r.women_from):
+        return "men only"
+    return f"{r.share_now:.0f} %"
+
+
+def fig_timeline(f: dict, sport: str | None = None) -> go.Figure:
+    t = timeline_data(f)
+    if t.empty:
+        return empty_figure()
+    has_women = t.women_from.notna()
+    wf = t.women_from.where(has_women, t["last"]).astype(int)
+    labels = [f"<b>{s}</b>" if s == sport else s for s in t.sport]
+    gx, gy, vx, vy = [], [], [], []
+    for lab, first, last, w, ok in zip(labels, t["first"], t["last"], wf, has_women):
+        if w > first:                              # men-only years (the whole line if never with women)
+            gx += [first, w, None]
+            gy += [lab, lab, None]
+        if ok:                                     # years with women
+            vx += [w, max(last, w + 0.5), None]    # a sport with one Games still gets a visible stub
+            vy += [lab, lab, None]
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=gx, y=gy, mode="lines", line=dict(color=MEN_YEARS, width=5), name="Men only",
+                             hoverinfo="skip"))
+    fig.add_trace(go.Scatter(x=vx, y=vy, mode="lines", line=dict(color=SEX_COLORS["Female"], width=5),
+                             name="Women also compete", hoverinfo="skip"))
+    w = t[has_women]
+    hover = [f"<b>{r.sport}</b><br>held {r.first}–{r.last}<br>"
+             + ("women only" if r.women_only else f"women since {int(r.women_from)}" if pd.notna(r.women_from)
+                else "never with women")
+             + f"<br>{r.last}: {r.women_now:,} women of {r.n_now:,} athletes ({r.share_now:.0f} %)"
+             for r in t.itertuples()]
+    fig.add_trace(go.Scatter(
+        x=wf[has_women], y=[l for l, ok in zip(labels, has_women) if ok], mode="markers", showlegend=False,
+        marker=dict(size=9, color=SEX_COLORS["Female"], line=dict(color="white", width=1.5)),
+        customdata=w.sport, text=[h for h, ok in zip(hover, has_women) if ok],
+        hovertemplate="%{text}<extra></extra>"))
+    # status text to the right of every line (also clickable / hoverable)
+    x_text = max(t["last"]) + 4
+    fig.add_trace(go.Scatter(
+        x=[x_text] * len(t), y=labels, mode="text", text=[_status(r) for r in t.itertuples()],
+        textposition="middle right", showlegend=False, customdata=t.sport, hovertext=hover,
+        textfont=dict(size=10.5, color=[SEX_COLORS["Female"] if r.share_now >= 40 else TEXT_SECONDARY
+                                        for r in t.itertuples()]),
+        hovertemplate="%{hovertext}<extra></extra>"))
+    lo = min(t["first"])
+    fig.update_xaxes(range=[lo - 3, x_text + 16], showgrid=True, gridcolor="#efeeea",
+                     tickvals=[y for y in range(1900, 2021, 20) if y >= lo - 3], side="top")
+    fig.update_yaxes(autorange="reversed", showgrid=False, tickfont=dict(size=11), automargin=True,
+                     categoryorder="array", categoryarray=labels)
+    note = (f"{t.attrs['dropped']} discontinued sports not shown" if t.attrs.get("dropped") else "")
+    fig.update_layout(height=max(360, 17 * len(t) + 100), hovermode="closest", margin=dict(t=70, l=10, r=10, b=10),
+                      legend=dict(orientation="h", y=0.995, yanchor="top", x=0, yref="container"),
+                      title=dict(text=note, font=dict(size=10.5, color=TEXT_MUTED), x=1, xanchor="right",
+                                 y=0.995, yanchor="top", yref="container"))
     return fig
 
 
-def sport_from_heat_click(click) -> str | None:
+def sport_from_timeline_click(click) -> str | None:
     if not click or not click.get("points"):
         return None
     cd = click["points"][0].get("customdata")
-    if isinstance(cd, list) and len(cd) >= 3:
-        return cd[2]
-    y = click["points"][0].get("y", "")
+    if isinstance(cd, list):
+        cd = cd[0] if cd else None
+    if isinstance(cd, str) and cd:
+        return cd
+    y = click["points"][0].get("y") or ""
     return y.replace("<b>", "").replace("</b>", "") or None
 
 
@@ -231,66 +280,17 @@ def fig_spine(f: dict) -> go.Figure:
     return fig
 
 
-# ====================================================================== Q4.4 pyramid
-def pyramid_data(f: dict, sport: str | None = None) -> pd.DataFrame:
-    a = da.filter_athletes(f, ignore=IGNORE)
-    if sport:
-        a = a[a.sport == sport]
-    a = a.drop_duplicates(["athlete_id", "edition_id"]).dropna(subset=["age"])
-    age = a.age.astype(float).clip(lower=AGE_MIN, upper=AGE_MAX).astype(int)
-    t = pd.crosstab(age, a.sex)
-    pct = t / t.sum() * 100
-    pct.attrs["median"] = a.groupby("sex").age.median().astype(float).to_dict()
-    pct.attrs["n"] = t.sum().to_dict()
-    return pct
-
-
-def fig_pyramid(f: dict, sport: str | None = None) -> go.Figure:
-    p = pyramid_data(f, sport)
-    if p.empty or len(p.columns) < 1:
-        return empty_figure()
-    ages = p.index.tolist()
-    labels = [f"{a}+" if a == AGE_MAX else (f"≤{a}" if a == AGE_MIN else str(a)) for a in ages]
-    fig = go.Figure()
-    for sex, sign in [("Female", -1), ("Male", 1)]:
-        if sex not in p:
-            continue
-        fig.add_trace(go.Bar(
-            y=ages, x=sign * p[sex], orientation="h", name=f"{SEX_LABEL[sex]} (n={p.attrs['n'][sex]:,})",
-            marker=dict(color=SEX_COLORS[sex]), customdata=np.stack([p[sex], labels], axis=1),
-            hovertemplate=f"<b>{SEX_LABEL[sex]}, age %{{customdata[1]}}</b><br>%{{customdata[0]:.1f}} % of "
-                          f"{SEX_LABEL[sex].lower()}<extra></extra>"))
-        med = p.attrs["median"].get(sex)
-        if med is not None:
-            fig.add_hline(y=med, line=dict(color=SEX_COLORS[sex], width=1.5, dash="dot"))
-            fig.add_annotation(x=0.01 if sign < 0 else 0.99, xref="x domain", y=med,
-                               text=f"median {med:.0f}", showarrow=False, yshift=8,
-                               xanchor="left" if sign < 0 else "right",
-                               font=dict(size=10, color=SEX_COLORS[sex]))
-    m = float(np.nanmax(p.values)) * 1.1
-    fig.update_layout(barmode="relative", bargap=0.08, hovermode="closest", margin=dict(t=40),
-                      legend=dict(y=1.0, yanchor="bottom", x=0),
-                      title=dict(text=sport or "", x=1, xanchor="right", y=0.99,
-                                 font=dict(size=11, color=TEXT_MUTED)))
-    ticks = list(range(-int(m) // 2 * 2, int(m) + 1, 2))           # every 2 %, shown without sign
-    fig.update_xaxes(range=[-m, m], tickvals=ticks, ticktext=[f"{abs(v)} %" if v else "0" for v in ticks],
-                     showgrid=False)
-    fig.update_yaxes(title_text="Age at the Games", tickvals=list(range(15, AGE_MAX + 1, 5)),
-                     ticktext=[str(v) if v < AGE_MAX else f"{v}+" for v in range(15, AGE_MAX + 1, 5)])
-    return fig
-
-
 # ====================================================================== callbacks
 @callback(Output("ge-sport", "data"), Output("ge-sport-label", "children"),
-          Input("ge-heatmap", "clickData"), Input("ge-sport-clear", "n_clicks"), State("ge-sport", "data"),
+          Input("ge-timeline", "clickData"), Input("ge-sport-clear", "n_clicks"), State("ge-sport", "data"),
           prevent_initial_call=True)
 def follow_sport(click, _clear, current):
-    """Click a heatmap cell to follow its sport; click it again (or Clear) to stop."""
+    """Click a sport on the timeline to follow it; click it again (or Clear) to stop."""
     if ctx.triggered_id == "ge-sport-clear":
-        return None, "none: click a sport in Q4.2"
-    sport = sport_from_heat_click(click)
+        return None, NO_SPORT
+    sport = sport_from_timeline_click(click)
     if not sport or sport == current:
-        return None, "none: click a sport in Q4.2"
+        return None, NO_SPORT
     return sport, sport
 
 
@@ -299,16 +299,11 @@ def update_share(f, sport):
     return fig_share(f, sport)
 
 
-@tab_callback(TAB_ID, Output("ge-heatmap", "figure"), Input("filters", "data"), Input("ge-sport", "data"))
-def update_heatmap(f, sport):
-    return fig_heatmap(f, sport)
+@tab_callback(TAB_ID, Output("ge-timeline", "figure"), Input("filters", "data"), Input("ge-sport", "data"))
+def update_timeline(f, sport):
+    return fig_timeline(f, sport)
 
 
 @tab_callback(TAB_ID, Output("ge-spine", "figure"), Input("filters", "data"))
 def update_spine(f):
     return fig_spine(f)
-
-
-@tab_callback(TAB_ID, Output("ge-pyramid", "figure"), Input("filters", "data"), Input("ge-sport", "data"))
-def update_pyramid(f, sport):
-    return fig_pyramid(f, sport)

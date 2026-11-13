@@ -1,8 +1,8 @@
-"""Tab 2, Countries & Medals: who wins, and has that changed? (Q2.1-Q2.6)
+"""Tab 2, Countries & Medals: who wins? (Q2.1-Q2.4)
 
-Countries chosen in the sidebar are *highlighted* on this tab (not filtered out),
-and clicking a country in the map, bump chart, scatter or Sankey adds/removes it
-from that selection, so all four charts (and the other tabs) follow.
+Countries chosen in the filter panel are *highlighted* on this tab (not filtered
+out), and clicking a country in the map, scatter or host chart adds/removes it
+from that selection, so all charts (and the other tabs) follow.
 """
 from __future__ import annotations
 
@@ -15,16 +15,15 @@ import dash_bootstrap_components as dbc
 from .. import data_access as da
 from ..components import tab_callback, chart_card, data_note, segmented, tab_intro
 from ..theme import (DEEMPHASIS, SELECTION_COLORS, SEQUENTIAL_BLUE, TEXT_MUTED, TEXT_PRIMARY,
-                     TEXT_SECONDARY, empty_figure, tint)
+                     TEXT_SECONDARY, empty_figure)
 
 TAB_ID = "countries"
 LABEL = "Countries & Medals"
 
 DEFAULT_SYMBOL = "#3987e5"          # map circles when nothing is selected
 DIVERGING_RCA = [[0.0, "#c43c3c"], [0.5, "#f0efec"], [1.0, "#1c5cab"]]   # red <- gray -> blue
-TOP_RANK = 10
 HEATMAP_ROWS, HEATMAP_COLS = 20, 20
-SEASON_NOTE = "Summer Games shown; choose Winter in the sidebar to see the Winter Games."
+SEASON_NOTE = "Summer Games shown; choose Winter in the filters to see the Winter Games."
 
 
 # ====================================================================== layout
@@ -42,50 +41,35 @@ def layout():
     ], className="d-flex align-items-center")
     heat_controls = segmented("co-heat-metric", ["count", "index"], "count",
                               {"count": "Medal count", "index": "Specialisation index"})
-    sankey_controls = html.Div([
-        html.Span("Minimum athletes per flow", className="small text-secondary"),
-        dcc.Slider(id="co-sankey-min", min=2, max=50, step=1, value=10,
-                   marks={2: "2", 10: "10", 25: "25", 50: "50"}, tooltip={"placement": "bottom"}),
-    ])
     return html.Div([
-        tab_intro("Who wins, and has that changed?",
-                  "Medal geography, the rise and fall of sporting powers, whether success is just size and "
-                  "wealth, national specialisations, home advantage and athletes changing teams. "
-                  "Countries chosen in the sidebar are highlighted here, not filtered out; click a country "
-                  "in any chart to add or remove it."),
+        tab_intro("Who wins, and why?",
+                  "Medal geography, whether success is just size and wealth, national specialisations and home "
+                  "advantage. Countries chosen in the filters are highlighted here, not filtered out; click a "
+                  "country in any chart to add or remove it."),
         chart_card("co-map", "Q2.1", "Where in the world are medals won?",
                    "Proportional-symbol map · choropleth", "Spatial",
-                   "Totals are circles (area = medals); historic teams such as the USSR are drawn at their "
-                   "main successor. Rates switch to a shaded map (1960 on, present-day countries only).",
-                   height=480, controls=map_controls),
+                   "Totals are circles (area = medals); historic teams such as the USSR keep their own circle, "
+                   "drawn at their main successor. Rates switch to a shaded map (1960 on, present-day countries "
+                   "only).",
+                   height=500, controls=map_controls),
         dbc.Row([
-            dbc.Col(chart_card("co-bump", "Q2.2", "Which countries dominated which eras?",
-                               "Bump chart", "Ranking",
-                               "Each line is a country's place in the medal table (1 = top), shown while it is "
-                               "in the top 10. Coloured lines: your selection, or else the four countries with "
-                               "the most golds in the period.", height=440), lg=7),
-            dbc.Col(chart_card("co-scatter", "Q2.3", "Is success just a matter of size and wealth?",
+            dbc.Col(chart_card("co-scatter", "Q2.2", "Is success just a matter of size and wealth?",
                                "Bubble scatter (log-log)", "Correlation",
-                               "x = GDP, y = medals, area = population. Above the dashed trend line = more "
-                               "medals than the economy predicts.", height=440, controls=scatter_controls),
-                    lg=5),
+                               "x = GDP, y = medals, bubble area = population. The dashed line is the trend: "
+                               "countries above it win more medals than their economy predicts.",
+                               height=560, controls=scatter_controls), lg=7),
+            dbc.Col(chart_card("co-host", "Q2.3", "Do host countries win more at their home Games?",
+                               "Dumbbell", "Distribution (dot-plot)",
+                               "Gray dot = the host's usual share of all medals (two Games before and after); "
+                               "blue dot = its share at home. The line is the home boost.", height=600), lg=5),
         ], className="g-3 my-1"),
         chart_card("co-heatmap", "Q2.4", "In which sports does each country specialise?",
                    "XY-heatmap", "Correlation",
                    "Count: darker = more medals. Specialisation index = a country's share of medals in a sport "
-                   "÷ its share of all medals: blue = stronger than its overall level, red = weaker.",
-                   height=560, controls=heat_controls),
-        dbc.Row([
-            dbc.Col(chart_card("co-host", "Q2.5", "Do host countries win more at their home Games?",
-                               "Dumbbell", "Distribution (dot-plot)",
-                               "Gray dot = the host's usual share of all medals (two Games before and after); "
-                               "blue dot = its share at home. The line is the home boost.", height=620), lg=5),
-            dbc.Col(chart_card("co-sankey", "Q2.6", "How do athletes move between national teams?",
-                               "Sankey", "Flow",
-                               "Left = team at one Games, right = team at the athlete's next Games; band width "
-                               "= athletes. Break-ups (USSR → Unified Team → successors), reunification "
-                               "(Germany) and naturalisation.", height=620, controls=sankey_controls), lg=7),
-        ], className="g-3 my-1"),
+                   "÷ its share of all medals: blue = stronger than its overall level, red = weaker. Teams are "
+                   "combined with their predecessors (marked *): Russia includes the USSR, Germany includes East "
+                   "and West Germany; hover a row to see which teams.",
+                   height=580, controls=heat_controls),
         data_note("Medal totals follow the official medal table (team medals count once), without Art "
                   "Competitions. Per-sport medals (Q2.4) are counted from athlete results the same way. "
                   "Population and GDP: World Bank, 1960 onwards; historic teams have no World Bank data."),
@@ -108,8 +92,7 @@ def noc_from_click(click) -> str | None:
         cd = cd[0] if cd else None
     if isinstance(cd, str) and cd:
         return cd
-    label = p.get("label")                       # Sankey nodes
-    return label if isinstance(label, str) and label.isupper() and len(label) == 3 else None
+    return None
 
 
 def toggle(selected: list[str] | None, noc: str) -> list[str]:
@@ -239,55 +222,7 @@ def fig_map(f: dict, metric: str = "total", mode: str = "range") -> go.Figure:
     return fig
 
 
-# ====================================================================== Q2.2 bump chart
-def bump_data(f: dict) -> tuple[pd.DataFrame, list[str], str]:
-    f2, note = _summer_if_both(f)
-    cg = da.filter_country_games(f2)
-    ranked = cg[cg["rank"].notna() & (cg["rank"] <= TOP_RANK)]
-    top = (cg.groupby("noc").gold.sum().sort_values(ascending=False))
-    highlight = [n for n in (f["countries"] or []) if n in set(ranked.noc)] or top.head(4).index.tolist()
-    return cg, highlight, note
-
-
-def fig_bump(f: dict) -> go.Figure:
-    cg, highlight, note = bump_data(f)
-    years = sorted(cg.year.unique())
-    ranked = cg[cg["rank"].notna() & (cg["rank"] <= TOP_RANK)]
-    if ranked.empty:
-        return empty_figure()
-    colors = selection_colors(highlight)
-    fig = go.Figure()
-    # context lines first (gray), highlighted lines on top
-    order = [n for n in ranked.noc.unique() if n not in colors] + [n for n in highlight if n in set(ranked.noc)]
-    for noc in order:
-        d = cg[cg.noc == noc].set_index("year").reindex(years)
-        y = d["rank"].where(d["rank"] <= TOP_RANK).astype(float)
-        on = noc in colors
-        name = d.country.dropna().iloc[0] if d.country.notna().any() else noc
-        fig.add_trace(go.Scatter(
-            x=years, y=y, mode="lines+markers", name=name, customdata=[noc] * len(years),
-            line=dict(color=colors.get(noc, DEEMPHASIS), width=3 if on else 1.2),
-            marker=dict(size=8 if on else 4, color=colors.get(noc, DEEMPHASIS),
-                        line=dict(color="white", width=1)),
-            opacity=1 if on else 0.55, showlegend=False, connectgaps=False,
-            text=[f"<b>{name}</b> ({noc})<br>{y_} {d.season.dropna().iloc[0] if d.season.notna().any() else ''}"
-                  f"<br>Rank {int(r)} · {int(gd)} gold · {int(t)} medals" if pd.notna(r) else ""
-                  for y_, r, gd, t in zip(years, y, d.gold.fillna(0), d.total.fillna(0))],
-            hovertemplate="%{text}<extra></extra>"))
-        if on:   # direct label at the line's last point in the top 10
-            last = y.dropna()
-            if len(last):
-                fig.add_annotation(x=last.index[-1], y=last.iloc[-1], text=f"<b>{noc}</b>", xanchor="left",
-                                   xshift=8, showarrow=False, font=dict(color=colors[noc], size=12))
-    fig.update_yaxes(autorange=False, range=[TOP_RANK + 0.6, 0.4], tickvals=list(range(1, TOP_RANK + 1)),
-                     title_text="Rank in medal table", showgrid=False)
-    fig.update_xaxes(showgrid=True, range=[years[0] - 2, years[-1] + 8] if years else None)
-    fig.update_layout(hovermode="closest", margin=dict(t=30, r=10),
-                      title=dict(text=note, font=dict(size=11, color=TEXT_MUTED), x=0, y=0.99))
-    return fig
-
-
-# ====================================================================== Q2.3 bubble scatter
+# ====================================================================== Q2.2 bubble scatter
 def scatter_games_options(f: dict) -> tuple[list[dict], int | None]:
     cg = da.filter_country_games(f)
     g = cg[(cg.year >= 1960)].drop_duplicates("edition_id").sort_values(["year", "season"], ascending=False)
@@ -350,7 +285,11 @@ def fig_scatter(f: dict, edition_id: int | None) -> go.Figure:
 
 # ====================================================================== Q2.4 heatmap
 def heatmap_matrix(f: dict, metric: str = "count") -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Returns (z, counts): rows = countries, columns = sports."""
+    """Returns (z, counts): rows = countries, columns = sports.
+
+    Historic teams are folded into their present-day successor (da.lineage), so the USSR's
+    gymnastics medals count for Russia and East Germany's for Germany: a long-run
+    specialisation is about the sporting nation, not the flag it competed under."""
     m = da.table("medals_by_sport")
     m = m[m.year.between(*f["years"])]
     if f["season"] != "Both":
@@ -361,9 +300,12 @@ def heatmap_matrix(f: dict, metric: str = "count") -> tuple[pd.DataFrame, pd.Dat
         m = m[~m.sport.isin(da.table("sports").query("is_minor").sport)]
     if m.empty:
         return pd.DataFrame(), pd.DataFrame()
+    lin = da.lineage()
+    m = m.assign(noc=m.noc.map(lambda n: lin.get(n, n)))
     counts = m.pivot_table(index="noc", columns="sport", values="total", aggfunc="sum", fill_value=0)
     by_country = counts.sum(axis=1).sort_values(ascending=False)
-    rows = [n for n in (f["countries"] or []) if n in counts.index]
+    wanted = list(dict.fromkeys(lin.get(n, n) for n in (f["countries"] or [])))
+    rows = [n for n in wanted if n in counts.index]
     rows += [n for n in by_country.index if n not in rows][: max(0, HEATMAP_ROWS - len(rows))]
     cols = counts.sum(axis=0).sort_values(ascending=False).head(HEATMAP_COLS).index
     if metric == "index":
@@ -376,15 +318,26 @@ def heatmap_matrix(f: dict, metric: str = "count") -> tuple[pd.DataFrame, pd.Dat
     return z.loc[rows, cols], counts.loc[rows, cols]
 
 
+def predecessors(noc: str) -> list[str]:
+    """Historic teams folded into `noc` on the heatmap, e.g. RUS -> [URS, EUN, ROC]."""
+    return [h for h, succ in da.lineage().items() if succ == noc]
+
+
 def fig_heatmap(f: dict, metric: str = "count") -> go.Figure:
     z, counts = heatmap_matrix(f, metric)
     if z.empty:
         return empty_figure()
     names = da.table("countries").set_index("noc").country
-    sel = set(f["countries"] or [])
-    ylabels = [f"<b>{n}</b>" if n in sel else n for n in z.index]
-    custom = np.dstack([counts.values, np.broadcast_to(np.array([names.get(n, n) for n in z.index])[:, None],
-                                                       counts.shape)])
+    lin = da.lineage()
+    sel = {lin.get(n, n) for n in (f["countries"] or [])}
+    ylabels = []
+    full_names = []
+    for n in z.index:
+        pre = predecessors(n)
+        label = n + ("*" if pre else "")
+        ylabels.append(f"<b>{label}</b>" if n in sel else label)
+        full_names.append(names.get(n, n) + (f" (incl. {', '.join(names.get(h, h) for h in pre)})" if pre else ""))
+    custom = np.dstack([counts.values, np.broadcast_to(np.array(full_names)[:, None], counts.shape)])
     if metric == "index":
         # No medals in a sport = blank (not "strongly weaker"), so red marks real under-performance only
         logz = np.log2(z.where(counts > 0)).clip(-3, 3)
@@ -403,8 +356,13 @@ def fig_heatmap(f: dict, metric: str = "count") -> go.Figure:
                            hovertemplate="<b>%{customdata[1]}</b> · %{x}<br>%{z} medals<extra></extra>",
                            xgap=1, ygap=1)
     fig = go.Figure(trace)
+    notes = []
+    if any(predecessors(n) for n in z.index):
+        notes.append("* includes predecessor teams (hover for details)")
     if metric == "index":
-        fig.add_annotation(text="blank = no medals in that sport", x=1, y=-0.02, xref="paper", yref="paper",
+        notes.append("blank = no medals in that sport")
+    if notes:
+        fig.add_annotation(text=" · ".join(notes), x=1, y=-0.02, xref="paper", yref="paper",
                            xanchor="right", yanchor="top", showarrow=False, font=dict(size=10, color=TEXT_MUTED))
     fig.update_yaxes(autorange="reversed", showgrid=False, tickfont=dict(size=11))
     fig.update_xaxes(side="top", tickangle=-40, showgrid=False, tickfont=dict(size=11))
@@ -412,7 +370,7 @@ def fig_heatmap(f: dict, metric: str = "count") -> go.Figure:
     return fig
 
 
-# ====================================================================== Q2.5 host dumbbell
+# ====================================================================== Q2.3 host dumbbell
 def host_data(f: dict) -> tuple[pd.DataFrame, str]:
     f2, note = _summer_if_both(f)
     cg = da.table("country_games")
@@ -462,67 +420,14 @@ def fig_host(f: dict) -> go.Figure:
     fig.update_xaxes(title_text="Share of all medals (%)", rangemode="tozero")
     fig.update_yaxes(showgrid=False, tickfont=dict(size=10.5), categoryorder="array", automargin=True,
                      categoryarray=list(d.label[::-1]))
-    summary = f"Hosts did better at home in {better} of {len(d)} Games (median {ratio:.1f}× their usual share)."
-    fig.update_layout(margin=dict(t=84, l=10), legend=dict(y=1.0, yanchor="bottom", x=1, xanchor="right"),
-                      title=dict(text=summary + (f"<br><span style='font-size:10px;color:{TEXT_MUTED}'>{note}</span>"
-                                                 if note else ""),
-                                 font=dict(size=11.5, color=TEXT_SECONDARY), x=0, xref="paper",
-                                 y=0.995, yanchor="top"))
-    return fig
-
-
-# ====================================================================== Q2.6 Sankey
-def team_switches(f: dict) -> pd.DataFrame:
-    """Consecutive Games of the same athlete with a different team (event-level NOC)."""
-    a = da.filter_athletes(f, ignore=("countries",))
-    a = (a.drop_duplicates(["athlete_id", "edition_id", "noc"])
-          .assign(order=lambda x: x.year * 10 + (x.season == "Summer"))
-          .sort_values(["athlete_id", "order"]))
-    a["prev"] = a.groupby("athlete_id").noc.shift()
-    sw = a[a.prev.notna() & (a.prev != a.noc)]
-    return sw.groupby(["prev", "noc"]).size().rename("athletes").reset_index().sort_values(
-        "athletes", ascending=False)
-
-
-def fig_sankey(f: dict, min_flow: int = 10) -> go.Figure:
-    flows = team_switches(f)
-    if flows.empty:
-        return empty_figure("No athletes changed team in this selection")
-    shown = flows[flows.athletes >= min_flow]
-    hidden = flows[flows.athletes < min_flow]
-    if shown.empty:
-        return empty_figure(f"No flow has {min_flow}+ athletes", "Lower the minimum with the slider.")
-    names = da.table("countries").set_index("noc").country
-    colors = selection_colors(f["countries"])
-    left = list(dict.fromkeys(shown.prev))
-    right = list(dict.fromkeys(shown.noc))
-    labels = left + right
-    idx_l = {n: i for i, n in enumerate(left)}
-    idx_r = {n: i + len(left) for i, n in enumerate(right)}
-    node_color = [colors.get(n, "#8a8984") for n in labels]
-
-    def link_color(a, b):
-        c = colors.get(a) or colors.get(b)
-        if c:
-            h = c.lstrip("#")
-            return f"rgba({int(h[0:2], 16)},{int(h[2:4], 16)},{int(h[4:6], 16)},0.55)"
-        return "rgba(57,135,229,0.28)" if not colors else "rgba(138,137,132,0.22)"
-
-    fig = go.Figure(go.Sankey(
-        arrangement="snap",
-        node=dict(label=labels, color=node_color, pad=10, thickness=14, line=dict(width=0),
-                  customdata=[[n, names.get(n, n)] for n in labels],      # [noc, name]: noc used on click
-                  hovertemplate="<b>%{customdata[1]}</b> (%{label})<br>%{value} athletes<extra></extra>"),
-        link=dict(source=[idx_l[a] for a in shown.prev], target=[idx_r[b] for b in shown.noc],
-                  value=shown.athletes, color=[link_color(a, b) for a, b in zip(shown.prev, shown.noc)],
-                  customdata=[["", f"{names.get(a, a)} → {names.get(b, b)}"] for a, b in zip(shown.prev, shown.noc)],
-                  hovertemplate="%{customdata[1]}<br>%{value} athletes<extra></extra>"),
-        textfont=dict(size=11, color=TEXT_PRIMARY),
-    ))
-    note = (f"{len(shown)} flows, {shown.athletes.sum():,} athletes shown · {len(hidden)} smaller flows "
-            f"({hidden.athletes.sum():,} athletes) hidden" if len(hidden) else f"{len(shown)} flows")
-    fig.update_layout(margin=dict(l=8, r=8, t=30, b=8),
-                      title=dict(text=note, font=dict(size=11, color=TEXT_MUTED), x=0, y=0.99))
+    summary = (f"<b>Hosts did better at home in {better} of {len(d)} Games</b><br>"
+               f"median {ratio:.1f}× their usual share of medals")
+    if note:
+        summary += f"<br><span style='font-size:10px;color:{TEXT_MUTED}'>{note}</span>"
+    fig.add_annotation(text=summary, x=0, y=1, xref="paper", yref="paper", xanchor="left", yanchor="bottom",
+                       yshift=6, showarrow=False, align="left", font=dict(size=11.5, color=TEXT_SECONDARY))
+    fig.update_layout(margin=dict(t=76 if note else 60, l=10, b=96),
+                      legend=dict(orientation="h", y=0, yref="container", yanchor="bottom", x=1, xanchor="right"))
     return fig
 
 
@@ -531,11 +436,6 @@ def fig_sankey(f: dict, min_flow: int = 10) -> go.Figure:
           Input("co-map-mode", "value"))
 def update_map(f, metric, mode):
     return fig_map(f, metric, mode)
-
-
-@tab_callback(TAB_ID, Output("co-bump", "figure"), Input("filters", "data"))
-def update_bump(f):
-    return fig_bump(f)
 
 
 @tab_callback(TAB_ID, Output("co-scatter-games", "options"), Output("co-scatter-games", "value"),
@@ -561,19 +461,12 @@ def update_host(f):
     return fig_host(f)
 
 
-@tab_callback(TAB_ID, Output("co-sankey", "figure"), Input("filters", "data"), Input("co-sankey-min", "value"))
-def update_sankey(f, min_flow):
-    return fig_sankey(f, min_flow or 10)
-
-
 @callback(Output("flt-countries", "value", allow_duplicate=True),
-          Input("co-map", "clickData"), Input("co-bump", "clickData"), Input("co-scatter", "clickData"),
-          Input("co-host", "clickData"), Input("co-sankey", "clickData"),
+          Input("co-map", "clickData"), Input("co-scatter", "clickData"), Input("co-host", "clickData"),
           State("flt-countries", "value"), prevent_initial_call=True)
-def click_to_select(map_c, bump_c, scatter_c, host_c, sankey_c, selected):
-    """Linked views: a click on a country in any chart toggles it in the sidebar selection."""
-    clicks = {"co-map": map_c, "co-bump": bump_c, "co-scatter": scatter_c, "co-host": host_c,
-              "co-sankey": sankey_c}
+def click_to_select(map_c, scatter_c, host_c, selected):
+    """Linked views: a click on a country in any chart toggles it in the country filter."""
+    clicks = {"co-map": map_c, "co-scatter": scatter_c, "co-host": host_c}
     noc = noc_from_click(clicks.get(ctx.triggered_id))
     if not noc:
         return no_update

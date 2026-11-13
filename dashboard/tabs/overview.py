@@ -1,4 +1,4 @@
-"""Tab 1, Overview: what is in the data? (Q1.1-Q1.4)
+"""Tab 1, Overview: what is in the data? (Q1.1-Q1.3)
 
 Chart builders are plain functions (filters in, figure/rows out) so they can
 be tested without a browser; the @callback functions only wire them to the page.
@@ -12,12 +12,10 @@ import pandas as pd
 import plotly.graph_objects as go
 from dash import Input, Output, callback, html
 import dash_bootstrap_components as dbc
-from plotly.subplots import make_subplots
 
 from .. import data_access as da
 from ..components import tab_callback, chart_card, data_grid, medal_badges, tab_intro
-from ..theme import (SEASON_COLORS, SEX_COLORS, TEXT_MUTED, TEXT_PRIMARY, TEXT_SECONDARY,
-                     empty_figure, tint)
+from ..theme import SEASON_COLORS, TEXT_PRIMARY, empty_figure, tint
 
 TAB_ID = "overview"
 LABEL = "Overview"
@@ -25,9 +23,6 @@ LABEL = "Overview"
 KPIS = [("kpi-athletes", "Athletes"), ("kpi-countries", "Countries"), ("kpi-sports", "Sports"),
         ("kpi-events", "Events contested"), ("kpi-medals", "Medals awarded")]
 
-SEX_LABEL = {"Female": "Women", "Male": "Men"}
-# Games cancelled by war (decision D10): shown as gaps, not silently bridged
-CANCELLED = {"Summer": {1916: "WWI", 1940: "WWII", 1944: "WWII"}, "Winter": {1940: "WWII", 1944: "WWII"}}
 
 
 # ====================================================================== layout
@@ -41,29 +36,22 @@ def kpi_tile(id_: str, label: str) -> dbc.Col:
 def layout():
     return html.Div([
         tab_intro("What is in the data?",
-                  "126 years of Olympic athletes at a glance: how big the Games are, how they grew, "
-                  "how the programme is built, and a search for any individual athlete."),
+                  "126 years of Olympic athletes at a glance: how big the Games are, how the programme is "
+                  "built, and a search for any individual athlete."),
         html.Div([html.Div([html.Span("Q1.1", className="q-id"),
                             html.Span("How big are the Games in the current selection?", className="q-text")]),
                   html.Div(id="kpi-context", className="chart-name")],
                  className="card-head mb-2"),
         dbc.Row([kpi_tile(i, l) for i, l in KPIS], className="g-2 mb-3"),
-        dbc.Row([
-            dbc.Col(chart_card(
-                "ov-participation", "Q1.2", "How has participation grown, and how was it split between women and men?",
-                "Stacked area", "Change v Time · Part to whole",
-                "Total height = distinct athletes at each Games; the bands show the women/men split. "
-                "Summer and Winter have their own scales. Gray labels mark Games cancelled by war.",
-                height=400), lg=7),
-            dbc.Col(chart_card(
-                "ov-treemap", "Q1.3", "Which sports and events attract the most athletes?",
-                "Treemap", "Part to whole",
-                "Area = athlete entries (one athlete in one event). Click a sport to zoom into its events "
-                "and to show only that sport in Q1.2; click the top bar to zoom back out.",
-                height=400), lg=5),
-        ], className="g-3 mb-3"),
+        chart_card(
+            "ov-treemap", "Q1.2", "Which sports and events attract the most athletes?",
+            "Treemap", "Part to whole",
+            "Area = athlete entries (one athlete in one event); Summer in yellow, Winter in blue. Click a sport "
+            "to zoom into its events and to list its most decorated athletes in Q1.3; click the top bar to "
+            "zoom back out.",
+            height=560),
         dbc.Card(dbc.CardBody([
-            html.Div([html.Div([html.Span("Q1.4", className="q-id"),
+            html.Div([html.Div([html.Span("Q1.3", className="q-id"),
                                 html.Span("Who is a specific athlete, and what did they achieve?",
                                           className="q-text")]),
                       html.Span("Searchable table", className="chart-name")], className="card-head"),
@@ -73,8 +61,8 @@ def layout():
             data_grid("ov-athlete-table", page_size=10, row_selection="single"),
             html.Div(id="ov-athlete-card", className="mt-3"),
             html.Div([html.Span("How to read: ", className="fw-semibold"),
-                      "Without a search the table lists the most decorated athletes in the current filters. "
-                      "Click a row to open the athlete's full career."], className="how-to-read"),
+                      "Without a search the table lists the most decorated athletes in the current filters "
+                      "(and in the sport clicked in Q1.2, if any). Click a row to open the athlete's full career."], className="how-to-read"),
         ]), className="chart-card"),
     ])
 
@@ -111,80 +99,7 @@ def _delta_text(now: int, before: int, label: str) -> str:
     return f"{arrow} {abs(pct):.0f}% vs {label}"
 
 
-# ====================================================================== Q1.2 participation
-def participation_data(f: dict, sport: str | None = None) -> pd.DataFrame:
-    """Distinct athletes per Games x sex (an athlete in two sports counts once)."""
-    a = da.filter_athletes(f)
-    if sport:
-        a = a[a.sport == sport]
-    return (a.drop_duplicates(["athlete_id", "edition_id"])
-             .groupby(["season", "year", "sex"], observed=True).size().rename("n").reset_index())
-
-
-def _segments(years: list[int], gaps: list[int]) -> list[list[int]]:
-    """Split Games years into uninterrupted runs, breaking at cancelled Games."""
-    runs, cur = [], []
-    for y in years:
-        if cur and any(cur[-1] < g < y for g in gaps):
-            runs.append(cur)
-            cur = []
-        cur.append(y)
-    return runs + ([cur] if cur else [])
-
-
-def fig_participation(f: dict, sport: str | None = None) -> go.Figure:
-    d = participation_data(f, sport)
-    if d.empty:
-        return empty_figure()
-    seasons = [s for s in ["Summer", "Winter"] if s in set(d.season)]
-    fig = make_subplots(rows=1, cols=len(seasons), horizontal_spacing=0.08,
-                        column_widths=[0.6, 0.4] if len(seasons) == 2 else None)
-    for col, season in enumerate(seasons, start=1):
-        s = d[d.season == season].pivot_table(index="year", columns="sex", values="n", fill_value=0)
-        years = list(s.index)
-        gaps = [y for y in CANCELLED[season] if years[0] < y < years[-1]]
-        total = s.sum(axis=1).astype(float)
-        # War gaps: a labelled gray band, and the area is broken there (not bridged, not dropped to 0)
-        for y in gaps:
-            fig.add_vrect(x0=y - 1.6, x1=y + 1.6, fillcolor="#efeeea", line_width=0, layer="below",
-                          row=1, col=col)
-        for war in dict.fromkeys(CANCELLED[season][y] for y in gaps):     # one label per war
-            war_years = [y for y in gaps if CANCELLED[season][y] == war]
-            fig.add_annotation(x=sum(war_years) / len(war_years), y=1,
-                               yref=f"y{'' if col == 1 else col} domain", text=war,
-                               showarrow=False, yanchor="top", font=dict(size=10, color=TEXT_MUTED),
-                               row=1, col=col)
-        for i, run in enumerate(_segments(years, gaps)):
-            part = s.loc[run]
-            for sex in ["Female", "Male"]:
-                if sex not in part:
-                    continue
-                share = (part[sex].astype(float) / total.loc[run] * 100).round(1)
-                fig.add_trace(go.Scatter(
-                    # a lone Games has no area to fill, so it is drawn as markers
-                    x=run, y=part[sex], name=SEX_LABEL[sex], stackgroup=f"{season}-{i}",
-                    mode="lines" if len(run) > 1 else "lines+markers", marker=dict(size=10),
-                    line=dict(width=1.2, color=SEX_COLORS[sex]), fillcolor=SEX_COLORS[sex],
-                    legendgroup=sex, showlegend=(col == 1 and i == 0), customdata=share,
-                    hovertemplate=f"<b>%{{x}} {season}</b><br>{SEX_LABEL[sex]}: %{{y:,}} "
-                                  "(%{customdata}%)<extra></extra>"),
-                    row=1, col=col)
-        fig.add_annotation(x=0.02, y=0.97, xref=f"x{'' if col == 1 else col} domain",
-                           yref=f"y{'' if col == 1 else col} domain", text=f"<b>{season}</b>",
-                           showarrow=False, xanchor="left", yanchor="top",
-                           font=dict(size=12, color=TEXT_SECONDARY))
-    fig.update_yaxes(rangemode="tozero")
-    fig.update_yaxes(title_text="Athletes", row=1, col=1)
-    fig.update_xaxes(showgrid=False)
-    fig.update_layout(hovermode="x unified", margin=dict(t=40, l=56),
-                      legend=dict(y=1.08, x=0, traceorder="normal"))
-    if sport:
-        fig.update_layout(title=dict(text=f"Showing: <b>{sport}</b> (click the treemap's top bar to reset)",
-                                     font=dict(size=12, color=TEXT_SECONDARY), x=1, xanchor="right", y=0.99))
-    return fig
-
-
-# ====================================================================== Q1.3 treemap
+# ====================================================================== Q1.2 treemap
 def treemap_frame(f: dict) -> pd.DataFrame:
     """Nodes for Season -> Sport -> Event, valued by athlete entries."""
     e = da.filter_events(f)
@@ -238,7 +153,7 @@ def sport_from_click(click) -> str | None:
     return parts[1] if len(parts) >= 2 else None
 
 
-# ====================================================================== Q1.4 athlete search
+# ====================================================================== Q1.3 athlete search
 def _fold(s: str) -> str:
     """Lower-case and strip accents so 'comaneci' finds 'Comăneci'."""
     return unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode().lower()
@@ -264,13 +179,18 @@ GRID_COLUMNS = [
 ]
 
 
-def search_athletes(f: dict, query: str | None, limit: int = 500) -> tuple[list[dict], str]:
+def search_athletes(f: dict, query: str | None, limit: int = 500,
+                    sport: str | None = None) -> tuple[list[dict], str]:
     a = da.filter_athletes(f)
+    if sport:
+        a = a[a.sport == sport]
     q = (query or "").strip()
     if q:
         a = a[_folded_names().loc[a.index].str.contains(_fold(q), regex=False)]
     if a.empty:
-        return [], (f"No athlete named “{q}” in the current filters." if q else "No athletes match the filters.")
+        where = f" in {sport}" if sport else ""
+        return [], (f"No athlete named “{q}”{where} in the current filters." if q
+                    else "No athletes match the filters.")
     # 1) fast numeric aggregation for every athlete, 2) text columns only for the rows shown
     g = (a.groupby("athlete_id")
           .agg(first=("year", "min"), last=("year", "max"), n_games=("edition_id", "nunique"),
@@ -286,10 +206,13 @@ def search_athletes(f: dict, query: str | None, limit: int = 500) -> tuple[list[
     shown = shown.merge(text, on="athlete_id")
     shown["years"] = shown["first"].astype(str).where(
         shown["first"] == shown["last"], shown["first"].astype(str) + "–" + shown["last"].astype(str))
+    scope = f"{sport} athletes" if sport else "athletes"
     if q:
-        info = (f"1 athlete matches “{q}”" if n == 1 else f"{n:,} athletes match “{q}”") + " in the current filters."
+        info = (f"1 {scope[:-1]} matches “{q}”" if n == 1 else f"{n:,} {scope} match “{q}”") + " in the current filters."
     else:
-        info = f"Most decorated of {n:,} athletes in the current filters (medals counted within the filters)."
+        info = f"Most decorated of {n:,} {scope} in the current filters (medals counted within the filters)."
+    if sport:
+        info += " Click the treemap's top bar to show all sports again."
     if n > limit:
         info += f" Showing the top {limit}."
     return shown.drop(columns=["first", "last"]).to_dict("records"), info
@@ -320,7 +243,7 @@ def athlete_card(athlete_id: int) -> html.Div:
     return dbc.Card(dbc.CardBody([
         html.Div([html.Span(bio["name"], className="fw-bold fs-6 me-2"),
                   html.Span(" · ".join(facts), className="text-secondary small")]),
-        html.Div("Full career, regardless of the sidebar filters.", className="small text-secondary mb-2"),
+        html.Div("Full career, regardless of the filters.", className="small text-secondary mb-2"),
         dbc.Table([html.Thead(html.Tr([html.Th("Games"), html.Th("Team"), html.Th("Sport"),
                                        html.Th("Events (medal)"), html.Th("Medals")])),
                    html.Tbody(rows)], size="sm", hover=True, responsive=True, className="mb-0"),
@@ -347,11 +270,6 @@ def update_kpis(f):
     return values + deltas + [context]
 
 
-@tab_callback(TAB_ID, Output("ov-participation", "figure"), Input("filters", "data"), Input("ov-treemap", "clickData"))
-def update_participation(f, click):
-    return fig_participation(f, sport_from_click(click))
-
-
 @tab_callback(TAB_ID, Output("ov-treemap", "figure"), Input("filters", "data"))
 def update_treemap(f):
     return fig_treemap(f)
@@ -359,9 +277,9 @@ def update_treemap(f):
 
 @tab_callback(TAB_ID, Output("ov-athlete-table", "rowData"), Output("ov-athlete-table", "columnDefs"),
           Output("ov-search-info", "children"),
-          Input("filters", "data"), Input("ov-search", "value"))
-def update_athlete_table(f, query):
-    rows, info = search_athletes(f, query)
+          Input("filters", "data"), Input("ov-search", "value"), Input("ov-treemap", "clickData"))
+def update_athlete_table(f, query, click=None):
+    rows, info = search_athletes(f, query, sport=sport_from_click(click))
     return rows, GRID_COLUMNS, info
 
 

@@ -52,21 +52,7 @@ def test_map_play_mode_has_one_frame_per_games():
 
 
 # ---------------------------------------------------------------- Q2.2 bump
-def test_bump_only_shows_top_ten_and_breaks_lines():
-    fig = co.fig_bump(F)
-    ys = np.concatenate([np.array(t.y, dtype=float) for t in fig.data])
-    assert np.nanmax(ys) <= 10 and np.isnan(ys).any()                 # gaps when outside the top 10
-    assert "Summer" in fig.layout.title.text                          # Both -> Summer, with a note
-
-
-def test_bump_highlights_selection():
-    _, highlight, _ = co.bump_data({**F, "countries": ["URS", "XXX"]})
-    assert highlight == ["URS"]                                       # unknown / never-top-10 codes dropped
-    _, default, _ = co.bump_data(F)
-    assert default == ["USA", "URS", "GBR", "CHN"]                    # most Summer golds, 1896-2022
-
-
-# ---------------------------------------------------------------- Q2.3 scatter
+# ---------------------------------------------------------------- Q2.2 scatter
 def test_scatter_trend_and_ratio():
     d = co.scatter_data(61)                                           # Tokyo 2020
     slope, _ = d.attrs["fit"]
@@ -88,7 +74,26 @@ def test_heatmap_keeps_selected_countries():
     assert z.index[0] == "JAM"
 
 
-# ---------------------------------------------------------------- Q2.5 hosts
+def test_heatmap_combines_historic_teams_with_successors():
+    z, counts = co.heatmap_matrix(F, "count")
+    assert not {"URS", "GDR", "FRG", "EUN", "ROC"} & set(z.index)     # folded into RUS / GER
+    m = co.da.table("medals_by_sport")
+    gym = m[(m.sport == "Artistic Gymnastics") & m.noc.isin(["URS", "EUN", "ROC", "RUS"])].total.sum()
+    assert counts.loc["RUS", "Artistic Gymnastics"] == gym
+    assert set(co.predecessors("GER")) == {"GDR", "FRG", "SAA"}
+    z, _ = co.heatmap_matrix({**F, "countries": ["URS"]}, "count")
+    assert z.index[0] == "RUS"                                          # selecting the USSR shows Russia's row
+    fig = co.fig_heatmap(F, "count")
+    assert "RUS*" in fig.data[0].y and "predecessor" in fig.layout.annotations[0].text
+
+
+def test_lineage_keeps_mixed_teams_apart():
+    lin = co.da.lineage()
+    assert lin["URS"] == "RUS" and lin["GDR"] == "GER" and lin["TCH"] == "CZE"
+    assert "ANZ" not in lin and "WIF" not in lin and "COR" not in lin
+
+
+# ---------------------------------------------------------------- Q2.3 hosts
 def test_host_advantage_is_visible():
     d, _ = co.host_data(F)
     assert (d.home > d.usual).mean() > 0.8
@@ -96,19 +101,7 @@ def test_host_advantage_is_visible():
 
 
 # ---------------------------------------------------------------- Q2.6 Sankey
-def test_team_switches_contain_known_flows():
-    s = co.team_switches(F).set_index(["prev", "noc"]).athletes
-    assert s[("URS", "EUN")] > 100 and s[("FRG", "GER")] > 100
-    assert (s.index.get_level_values(0) != s.index.get_level_values(1)).all()
-
-
-def test_sankey_hides_small_flows_and_reports_them():
-    fig = co.fig_sankey(F, 10)
-    assert min(fig.data[0].link.value) >= 10 and "hidden" in fig.layout.title.text
-
-
 def test_all_charts_survive_empty_filters():
     none = {**F, "years": [1916, 1918]}
-    for fig in (co.fig_map(none), co.fig_bump(none), co.fig_heatmap(none), co.fig_host(none),
-                co.fig_sankey(none), co.fig_scatter(none, None)):
+    for fig in (co.fig_map(none), co.fig_heatmap(none), co.fig_host(none), co.fig_scatter(none, None)):
         assert len(fig.data) == 0

@@ -58,6 +58,7 @@ pio.templates.default = "olympics"
 # Plotly toolbar: keep zoom/pan/reset/download, drop rarely useful buttons
 GRAPH_CONFIG = {
     "displaylogo": False,
+    "scrollZoom": False,          # the mouse wheel scrolls the page, also over the map (zoom: toolbar)
     "modeBarButtonsToRemove": ["lasso2d", "select2d", "autoScale2d", "toggleSpikelines"],
     "toImageButtonOptions": {"format": "png", "scale": 2},
 }

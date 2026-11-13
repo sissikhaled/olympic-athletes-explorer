@@ -39,15 +39,18 @@ def test_app_imports_and_layout_builds():
 def test_every_tab_has_its_questions():
     from dashboard.layout import TABS
     import json
-    expected = {"overview": ["Q1.1", "Q1.2", "Q1.3", "Q1.4"],
-                "countries": [f"Q2.{i}" for i in range(1, 7)],
-                "physiques": [f"Q3.{i}" for i in range(1, 5)],
-                "gender": [f"Q4.{i}" for i in range(1, 5)],
-                "sports": [f"Q5.{i}" for i in range(1, 4)]}
+    expected = {"overview": ["Q1.1", "Q1.2", "Q1.3"],
+                "countries": [f"Q2.{i}" for i in range(1, 5)],
+                "physiques": [f"Q3.{i}" for i in range(1, 4)],
+                "gender": [f"Q4.{i}" for i in range(1, 4)],
+                "sports": [f"Q5.{i}" for i in range(1, 3)]}
     for tab in TABS:
         text = json.dumps(tab.layout().to_plotly_json(), default=str)
         for q in expected[tab.TAB_ID]:
             assert q in text, f"{q} missing on tab {tab.TAB_ID}"
+        last = expected[tab.TAB_ID][-1]
+        nxt = last[:-1] + str(int(last[-1]) + 1)
+        assert f'"{nxt}"' not in text, f"{nxt} should not exist on tab {tab.TAB_ID}"
 
 
 def test_filters_narrow_the_data():
@@ -110,3 +113,22 @@ def test_filter_bar_names_filters_and_tab_exceptions():
     assert chips == ["1896–2022", "Winter Games", "Women only", "2 countries"]
     bar = str(cb.show_filter_bar(da.DEFAULT_FILTERS, "gender"))
     assert "Sex filter does not apply" in bar and "(filtered)" not in bar
+
+
+def test_filter_panel_is_hidden_until_the_button_is_pressed():
+    import app
+    from dashboard import callbacks as cb
+    ids = _ids(app.serve_layout())
+    assert "filter-open" in ids and "filter-panel" in ids
+    assert cb.panel_class("filter-open", "filter-panel") == "filter-panel open"
+    assert cb.panel_class("filter-open", "filter-panel open") == "filter-panel"
+    assert cb.panel_class("filter-close", "filter-panel open") == "filter-panel"
+    assert cb.panel_class("filter-close", "filter-panel") == "filter-panel"
+
+
+def test_filter_badge_counts_active_filters():
+    from dashboard import callbacks as cb
+    from dashboard import data_access as da
+    assert cb.active_filter_count(da.DEFAULT_FILTERS) == 0
+    assert cb.active_filter_count({**da.DEFAULT_FILTERS, "season": "Winter", "countries": ["NOR"]}) == 2
+    assert cb.show_filter_count(da.DEFAULT_FILTERS)[1].endswith("d-none")

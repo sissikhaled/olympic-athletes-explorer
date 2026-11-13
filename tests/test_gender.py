@@ -38,18 +38,31 @@ def test_every_milestone_is_backed_by_the_data():
     assert w[w.sport == "Ski Jumping"].year.min() == 2014
 
 
-def test_heatmap_blank_when_small_and_ordered_by_first_women():
-    share, w, n = ge.heatmap_data(F)
-    assert share.notna().values.sum() > 0
-    assert ((n >= ge.MIN_CELL) | share.isna()).all().all()          # every shown cell has enough athletes
-    assert ((share >= 0) & (share <= 100) | share.isna()).all().all()
-    assert share.index[-1] in {"Polo", "Roller Hockey", "Rugby", "Tug-Of-War", "Military Ski Patrol"}
+def test_timeline_orders_sports_by_when_women_entered():
+    t = ge.timeline_data(F)
+    entered = t.women_from.dropna().tolist()
+    assert entered == sorted(entered)                               # earliest entry at the top
+    assert t.women_from.isna().tolist() == sorted(t.women_from.isna().tolist())   # never-with-women last
+    row = t.set_index("sport")
+    assert row.loc["Boxing", "women_from"] == 2012
+    assert row.loc["Ski Jumping", "women_from"] == 2014
+    assert pd.isna(row.loc["Nordic Combined", "women_from"])        # still men only in 2022
+    assert row.loc["Artistic Swimming", "women_only"]
+    assert "Tug-Of-War" not in row.index and t.attrs["dropped"] > 0   # discontinued sports hidden
 
 
-def test_heatmap_click_parsing():
-    assert ge.sport_from_heat_click({"points": [{"customdata": [3, 10, "Boxing"], "y": "Boxing"}]}) == "Boxing"
-    assert ge.sport_from_heat_click({"points": [{"y": "<b>Judo</b>"}]}) == "Judo"
-    assert ge.sport_from_heat_click(None) is None
+def test_timeline_labels_extremes_in_words():
+    fig = ge.fig_timeline(F, "Boxing")
+    status = dict(zip(fig.data[-1].customdata, fig.data[-1].text))
+    assert status["Nordic Combined"] == "men only" and status["Rhythmic Gymnastics"] == "women only"
+    assert status["Athletics"].endswith("%")
+    assert "<b>Boxing</b>" in fig.layout.yaxis.categoryarray
+
+
+def test_timeline_click_parsing():
+    assert ge.sport_from_timeline_click({"points": [{"customdata": "Boxing", "y": "Boxing"}]}) == "Boxing"
+    assert ge.sport_from_timeline_click({"points": [{"y": "<b>Judo</b>"}]}) == "Judo"
+    assert ge.sport_from_timeline_click(None) is None
 
 
 def test_spine_shares_add_up_and_sorted_by_imbalance():
@@ -60,12 +73,6 @@ def test_spine_shares_add_up_and_sorted_by_imbalance():
     assert gap == sorted(gap, reverse=True)
 
 
-def test_pyramid_percentages_per_sex_sum_to_100():
-    p = ge.pyramid_data(F)
-    assert (p.sum().round(6) == 100).all()
-    assert p.attrs["median"]["Female"] <= p.attrs["median"]["Male"]
-
-
 def test_followed_sport_adds_a_line():
     fig = ge.fig_share(F, "Boxing")
     assert [t.name for t in fig.data] == ["Summer", "Winter", "Boxing"]
@@ -73,5 +80,5 @@ def test_followed_sport_adds_a_line():
 
 def test_empty_states():
     none = {**F, "years": [1916, 1918]}
-    for fig in (ge.fig_share(none), ge.fig_heatmap(none), ge.fig_spine(none), ge.fig_pyramid(none)):
+    for fig in (ge.fig_share(none), ge.fig_timeline(none), ge.fig_spine(none)):
         assert len(fig.data) == 0

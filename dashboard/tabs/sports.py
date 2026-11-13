@@ -1,7 +1,7 @@
-"""Tab 5, Sport Comparison: which sports are alike? (Q5.1-Q5.3)
+"""Tab 5, Sport Comparison: which sports are alike? (Q5.1-Q5.2)
 
-Sport profiles are recomputed for the sidebar filters (years, season, sex,
-countries; the sidebar's sport filter is ignored - this tab has its own picker).
+Sport profiles are recomputed for the global filters (years, season, sex,
+countries; the Sports filter is ignored - this tab has its own picker).
 Profile: mean height, weight, BMI (one row per athlete per sport), mean age (per
 Games) and share of women. PCA on the standardised profiles places sports so
 that distance = dissimilarity.
@@ -14,15 +14,14 @@ from functools import lru_cache
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from dash import Input, Output, State, callback, ctx, dcc, html
-import dash_bootstrap_components as dbc
+from dash import Input, Output, State, ctx, dcc, html
 from plotly.subplots import make_subplots
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
 from .. import data_access as da
 from ..components import tab_callback, chart_card, data_note, tab_intro
-from ..theme import (DEEMPHASIS, SEASON_COLORS, SELECTION_COLORS, TEXT_MUTED, TEXT_PRIMARY, TEXT_SECONDARY,
+from ..theme import (DEEMPHASIS, SELECTION_COLORS, TEXT_MUTED, TEXT_PRIMARY, TEXT_SECONDARY,
                      empty_figure, tint)
 
 TAB_ID = "sports"
@@ -51,8 +50,8 @@ def layout():
     return html.Div([
         tab_intro("Which sports are alike?",
                   "Sports placed by the athletes they attract (body size, age and share of women), then "
-                  "compared side by side. The sidebar's sport filter does not apply here; use the picker or "
-                  "click sports on the map."),
+                  "compared side by side. The Sports filter does not apply here; use the picker or click "
+                  "sports on the map."),
         picker,
         chart_card("sp-pca", "Q5.1", "Which sports have similar athletes?",
                    "Similarity map (PCA scatter)", "Correlation",
@@ -60,17 +59,11 @@ def layout():
                    "axis; arrows show which way each measure grows). Circle = Summer, diamond = Winter, size = "
                    "athletes. Click a sport to add or remove it; box/lasso select to compare a group.",
                    height=560, selectable=True),
-        dbc.Row([
-            dbc.Col(chart_card("sp-radar", "Q5.2", "How do the chosen sports' athlete profiles compare?",
-                               "Radar", "Magnitude",
-                               "Each spoke is one measure in standard deviations from the average sport (middle "
-                               "ring). Points outside the ring are above average.", height=460), lg=5),
-            dbc.Col(chart_card("sp-dist", "Q5.3", "How much do the chosen sports' distributions overlap?",
-                               "Violins (small multiples)", "Distribution",
-                               "One violin per sport for height, weight and age; line = median. Where violins "
-                               "overlap, the sports draw similar athletes.", height=460), lg=7),
-        ], className="g-3 my-1"),
-        data_note("Profiles are recomputed for the sidebar's years, season, sex and countries. Sports with fewer "
+        chart_card("sp-dist", "Q5.2", "How different are the chosen sports' athletes?",
+                   "Violins (small multiples)", "Distribution",
+                   "One violin per sport for height, weight and age; line = median. Where violins overlap, the "
+                   "sports draw similar athletes; hover a median for the exact value and n.", height=460),
+        data_note("Profiles are recomputed for the filters' years, season, sex and countries. Sports with fewer "
                   f"than {MIN_MEASURED} measured athletes are left out. With a Sex filter set, '% women' is "
                   "dropped from the comparison."),
     ])
@@ -188,41 +181,7 @@ def fig_pca(f: dict, colors: dict[str, str]) -> go.Figure:
     return fig
 
 
-# ====================================================================== Q5.2 radar
-def fig_radar(f: dict, colors: dict[str, str]) -> go.Figure:
-    m, _, _ = pca_map(f)
-    chosen = [s for s in colors if s in m.index]
-    if not colors:
-        return empty_figure("Pick 2–4 sports to compare")
-    if not chosen:
-        return empty_figure("The chosen sports have too few measured athletes here",
-                            f"Each sport needs {MIN_MEASURED}+ measured athletes in the selection.")
-    feats = feature_list(f)
-    labels = [FEATURES[k] for k in feats] + [FEATURES[feats[0]]]
-    fig = go.Figure()
-    # the reference: an average sport sits on this ring (z = 0)
-    fig.add_trace(go.Scatterpolar(r=[3] * len(labels), theta=labels, mode="lines", name="average sport",
-                                  line=dict(color=TEXT_MUTED, dash="dash", width=1.4), hoverinfo="skip"))
-    for s in chosen:
-        z = [float(np.clip(m.loc[s, f"z_{k}"], -3, 3)) + 3 for k in feats]
-        raw = [m.loc[s, k] for k in feats]
-        fig.add_trace(go.Scatterpolar(
-            r=z + [z[0]], theta=labels, name=s, fill="toself", fillcolor=tint(colors[s], 0.75),
-            line=dict(color=colors[s], width=2), marker=dict(size=5), opacity=0.9,
-            customdata=[[v, zz - 3] for v, zz in zip(raw + [raw[0]], z + [z[0]])],
-            hovertemplate=f"<b>{s}</b><br>%{{theta}}: %{{customdata[0]:.1f}}<br>"
-                          "%{customdata[1]:+.1f} SD vs the average sport<extra></extra>"))
-    fig.update_layout(
-        polar=dict(bgcolor="#fcfcfb",
-                   radialaxis=dict(range=[0, 6], tickvals=[1, 2, 3, 4, 5], ticktext=["−2", "−1", "avg", "+1", "+2"],
-                                   tickfont=dict(size=9, color=TEXT_MUTED), gridcolor="#e9e8e4", angle=90),
-                   angularaxis=dict(gridcolor="#e9e8e4", tickfont=dict(size=11))),
-        legend=dict(y=-0.05, yanchor="top", x=0.5, xanchor="center", orientation="h"),
-        margin=dict(t=30, b=40, l=40, r=40))
-    return fig
-
-
-# ====================================================================== Q5.3 distributions
+# ====================================================================== Q5.2 distributions
 DIST_MEASURES = [("height_cm", "Height (cm)"), ("weight_kg", "Weight (kg)"), ("age", "Age (years)")]
 
 
@@ -307,11 +266,6 @@ def sync_compare(f, picked, click, selected, current, colors):
 @tab_callback(TAB_ID, Output("sp-pca", "figure"), Input("filters", "data"), Input("sp-colors", "data"))
 def update_pca(f, colors):
     return fig_pca(f, colors or {})
-
-
-@tab_callback(TAB_ID, Output("sp-radar", "figure"), Input("filters", "data"), Input("sp-colors", "data"))
-def update_radar(f, colors):
-    return fig_radar(f, colors or {})
 
 
 @tab_callback(TAB_ID, Output("sp-dist", "figure"), Input("filters", "data"), Input("sp-colors", "data"))

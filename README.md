@@ -21,26 +21,27 @@ Options: `PORT=8051 python app.py` uses another port; `DASH_DEBUG=1 python app.p
 ## What the dashboard answers
 
 Five tabs, each built around analytical questions. Every chart card shows its question, its chart type and
-its category in the [FT Visual Vocabulary](https://ft-interactive.github.io/visual-vocabulary/); all nine
-categories are used.
+its category in the [FT Visual Vocabulary](https://ft-interactive.github.io/visual-vocabulary/); seven of the
+nine categories are used.
 
 | Tab | Questions | Charts |
 |---|---|---|
-| **Overview** | How big are the Games, how did they grow, how is the programme built, who is a given athlete? | KPI tiles, stacked area, treemap, searchable athlete table + career card |
-| **Countries & Medals** | Where are medals won, who dominated when, is success just size and wealth, who specialises in what, do hosts win more, how do athletes move between teams? | proportional-symbol map / choropleth with play mode, bump chart, log-log bubble scatter, specialisation heatmap, host dumbbell, Sankey |
-| **Physiques** | What body does each sport select for, and how has that changed? Do medallists differ? | sorted box plots, height × weight density with lasso table, median + IQR trend, split violin |
-| **Gender** | How did women enter the Games, in which sports and countries, and at what ages? | annotated share line, sport × decade diverging heatmap, spine chart, population pyramid |
-| **Sport Comparison** | Which sports have similar athletes? How do 2–4 chosen sports compare? | PCA similarity map with loadings, radar, violins |
+| **Overview** | How big are the Games, how is the programme built, who is a given athlete? | KPI tiles, treemap, searchable athlete table + career card |
+| **Countries & Medals** | Where are medals won, is success just size and wealth, do hosts win more, who specialises in what? | proportional-symbol map / choropleth with play mode, log-log bubble scatter, host dumbbell, specialisation heatmap |
+| **Physiques** | How have athletes in a sport changed, where do they sit among all Olympians, do medallists differ? | median + IQR trend, height × weight density, split violin |
+| **Gender** | How did women enter the Games, when did each sport open to them, which countries send balanced teams? | annotated share line, sport timeline, spine chart |
+| **Sport Comparison** | Which sports have similar athletes? How different are 2–4 chosen sports? | PCA similarity map with loadings, violins |
 
-Full design rationale (21 chart forms, why each fits its question, interactions, colour system):
-[docs/analytical_questions.md](docs/analytical_questions.md).
+15 questions, 16 chart forms. Full design rationale (why each form fits its question, interactions, colour system,
+and the simplification review that removed six charts): [docs/analytical_questions.md](docs/analytical_questions.md).
 
 ### Interacting
-* **Sidebar filters** (years, season, sex, sports, countries) apply to every tab; the **Showing:** bar above the
-  tabs states the active filters and any tab-specific exception.
-* **Linked views:** click a country in any Countries chart to select it everywhere; click a sport in the treemap,
-  the box plots or the gender heatmap to drive that tab's other charts; box/lasso select in the height × weight
-  plot or on the similarity map.
+* **Filters** (years, season, sex, sports, countries): press the round **filter button** at the bottom right to
+  open the filter panel. Filters apply to every tab; a badge on the button counts the active ones, and the
+  **Showing:** bar above the tabs states them and any tab-specific exception.
+* **Linked views:** click a country in any Countries chart to select it everywhere; click a sport in the treemap
+  to list its athletes, or on the gender timeline to add it to the share line; click or lasso sports on the
+  similarity map to compare them.
 * **Hover** for exact values and sample sizes, **zoom/pan** on every chart (double-click resets), **search**
   athletes by name (accents optional), **▶ play** the medal map through history.
 
@@ -83,7 +84,7 @@ Highlights (full log with row counts and 16 numbered decisions: [docs/data_prepa
 ## Tests and quality checks
 
 ```bash
-python -m pytest                        # ~800 tests, ~45 s
+python -m pytest                        # ~600 tests, ~35 s
 python scripts/benchmark_callbacks.py   # server time per filter change, per tab
 ```
 The suite covers the cleaning rules, every chart builder, linked-view logic, and a sweep of every chart against
@@ -107,8 +108,8 @@ that empty charts explain why.
 │   ├── theme.py           validated colours, Plotly template, empty-state figure
 │   ├── data_access.py     loads tables once, applies the global filters (cached)
 │   ├── components.py      chart card, controls, data grid, per-tab callback helper
-│   ├── layout.py          header, filter sidebar, filter bar, tabs, About dialog
-│   ├── callbacks.py       sidebar → filter store, reset, summary, filter bar
+│   ├── layout.py          header, filter button + panel, filter bar, tabs, About dialog
+│   ├── callbacks.py       filter panel → filter store, reset, summary, filter bar, badge
 │   └── tabs/              overview · countries · physiques · gender · sports
 ├── docs/
 │   ├── project_plan.md          phases and progress

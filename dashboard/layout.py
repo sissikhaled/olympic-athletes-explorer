@@ -1,4 +1,4 @@
-"""Page frame: header, global filter sidebar, tabs, About modal, footer."""
+"""Page frame: header, floating filter button + slide-in filter panel, tabs, About modal, footer."""
 from dash import dcc, html
 import dash_bootstrap_components as dbc
 
@@ -14,11 +14,31 @@ def _year_marks() -> dict:
     return {y: {"label": str(y)} for y in [1896, 1920, 1940, 1960, 1980, 2000, 2022]}
 
 
-def sidebar() -> html.Div:
+FILTER_ICON = "M3 5h18l-7 8.5V19l-4 2v-7.5z"     # funnel outline (SVG path)
+
+
+def filter_button() -> html.Button:
+    """Round floating button, bottom right; opens the filter panel. The badge counts active filters."""
+    return html.Button([
+        html.Img(src="data:image/svg+xml;utf8," +
+                 "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' "
+                 f"stroke-width='2' stroke-linejoin='round'><path d='{FILTER_ICON}'/></svg>",
+                 alt="", className="fab-icon"),
+        html.Span(id="filter-count", className="fab-badge"),
+    ], id="filter-open", className="filter-fab", title="Filters", **{"aria-label": "Open filters"})
+
+
+def filter_panel() -> html.Div:
+    """Slide-in panel. It is hidden with CSS rather than removed, so the filter
+    components stay mounted and charts keep updating while it is closed."""
     f = da.DEFAULT_FILTERS
     return html.Div([
-        html.Div("Filters", className="sidebar-title"),
-        html.Div("Apply to every tab (see each tab's note for exceptions).", className="sidebar-sub"),
+        html.Div([html.Div("Filters", className="sidebar-title"),
+                  html.Button("×", id="filter-close", className="panel-close", title="Close",
+                              **{"aria-label": "Close filters"})],
+                 className="d-flex justify-content-between align-items-center"),
+        html.Div("Apply to every tab (see each tab's note for exceptions). Charts update as you change them.",
+                 className="sidebar-sub"),
 
         html.Label("Years", className="filter-label"),
         html.Div(id="flt-years-text", className="filter-value"),
@@ -45,7 +65,7 @@ def sidebar() -> html.Div:
         dbc.Button("Reset filters", id="flt-reset", color="secondary", outline=True, size="sm",
                    className="mt-3 w-100"),
         html.Div(id="flt-summary", className="filter-summary"),
-    ], className="sidebar")
+    ], id="filter-panel", className="filter-panel")
 
 
 def about_modal() -> dbc.Modal:
@@ -98,7 +118,8 @@ def serve_layout() -> html.Div:
     return html.Div([
         dcc.Store(id="filters", data=da.DEFAULT_FILTERS),
         header,
-        html.Div([sidebar(), html.Main([html.Div(id="filter-bar", className="filter-bar"), tabs, footer],
-                                       className="content")], className="app-body"),
+        html.Main([html.Div(id="filter-bar", className="filter-bar"), tabs, footer], className="content"),
+        filter_panel(),
+        filter_button(),
         about_modal(),
     ])

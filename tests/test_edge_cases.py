@@ -50,35 +50,27 @@ def builders(f):
     eds = co.scatter_games_options(f)[1]
     colors = sp.compare_colors([s for s in sp.DEFAULT_COMPARE])
     yield "ov.kpis", lambda: ov.kpi_values(f)
-    yield "ov.participation", lambda: ov.fig_participation(f)
-    yield "ov.participation_sport", lambda: ov.fig_participation(f, "Swimming")
     yield "ov.treemap", lambda: ov.fig_treemap(f)
     yield "ov.search", lambda: ov.search_athletes(f, "a")
+    yield "ov.search_sport", lambda: ov.search_athletes(f, None, sport="Swimming")
     for metric in ("total", "per_million", "per_gdp"):
         for mode in ("range", "games"):
             yield f"co.map_{metric}_{mode}", lambda m=metric, md=mode: co.fig_map(f, m, md)
-    yield "co.bump", lambda: co.fig_bump(f)
     yield "co.scatter", lambda: co.fig_scatter(f, eds)
     yield "co.heat_count", lambda: co.fig_heatmap(f, "count")
     yield "co.heat_index", lambda: co.fig_heatmap(f, "index")
     yield "co.host", lambda: co.fig_host(f)
-    yield "co.sankey", lambda: co.fig_sankey(f, 10)
-    yield "co.sankey_min2", lambda: co.fig_sankey(f, 2)
     for measure in ph.MEASURES:
-        yield f"ph.boxes_{measure}", lambda m=measure: ph.fig_boxes(f, m, focus)
         yield f"ph.trend_{measure}", lambda m=measure: ph.fig_trend(f, m, focus)
         yield f"ph.violin_{measure}", lambda m=measure: ph.fig_violin(f, m, focus)
     yield "ph.density", lambda: ph.fig_density(f, focus)
     yield "ph.density_nofocus", lambda: ph.fig_density(f, None)
-    yield "ph.selection", lambda: ph.selection_rows(f, {"points": [{"curveNumber": 1, "pointIndex": 0}]})
     yield "ge.share", lambda: ge.fig_share(f)
     yield "ge.share_sport", lambda: ge.fig_share(f, "Boxing")
-    yield "ge.heatmap", lambda: ge.fig_heatmap(f)
+    yield "ge.timeline", lambda: ge.fig_timeline(f)
+    yield "ge.timeline_sport", lambda: ge.fig_timeline(f, "Boxing")
     yield "ge.spine", lambda: ge.fig_spine(f)
-    yield "ge.pyramid", lambda: ge.fig_pyramid(f)
-    yield "ge.pyramid_sport", lambda: ge.fig_pyramid(f, "Boxing")
     yield "sp.pca", lambda: sp.fig_pca(f, colors)
-    yield "sp.radar", lambda: sp.fig_radar(f, colors)
     yield "sp.dist", lambda: sp.fig_dist(f, colors)
 
 

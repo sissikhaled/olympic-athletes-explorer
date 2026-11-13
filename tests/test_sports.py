@@ -44,15 +44,6 @@ def test_selection_rules():
     assert sp.update_selection(["A", "X"], valid, None)[0] == ["A"]          # unknown sports dropped
 
 
-def test_radar_uses_standard_scores():
-    fig = sp.fig_radar(F, sp.compare_colors(["Basketball", "Artistic Gymnastics"]))
-    bb = next(t for t in fig.data if t.name == "Basketball")
-    height_z = bb.customdata[0][1]
-    assert height_z > 1                                           # basketball well above average height
-    assert all(0 <= r <= 6 for r in bb.r)
-    assert fig.data[0].name == "average sport" and set(fig.data[0].r) == {3}
-
-
 def test_distributions_per_measure():
     fig = sp.fig_dist(F, sp.compare_colors(["Basketball", "Weightlifting"]))
     violins = [t for t in fig.data if t.type == "violin"]
@@ -69,5 +60,5 @@ def test_colour_follows_the_sport_not_its_position():
 
 def test_empty_states():
     none = {**F, "years": [1916, 1918]}
-    for fig in (sp.fig_pca(none, {}), sp.fig_radar(none, {"Judo": "#2a78d6"}), sp.fig_dist(none, {"Judo": "#2a78d6"})):
+    for fig in (sp.fig_pca(none, {}), sp.fig_dist(none, {"Judo": "#2a78d6"})):
         assert len(fig.data) == 0

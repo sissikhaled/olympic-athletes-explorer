@@ -1,4 +1,4 @@
-"""Tests for the Overview tab builders (Q1.1-Q1.4)."""
+"""Tests for the Overview tab builders (Q1.1-Q1.3)."""
 import sys
 from pathlib import Path
 
@@ -27,21 +27,6 @@ def test_previous_games_is_same_season():
     prev, label = ov.previous_games_filters(RIO)
     assert prev["years"] == [2012, 2012] and prev["season"] == "Summer" and label == "2012 Summer"
     assert ov.previous_games_filters(F) is None          # many Games selected -> no comparison
-
-
-def test_participation_counts_each_athlete_once_per_games():
-    d = ov.participation_data(RIO)
-    a = da.filter_athletes(RIO)
-    assert d.n.sum() == a.athlete_id.nunique()
-
-
-def test_participation_marks_cancelled_games_as_gaps():
-    fig = ov.fig_participation({**F, "season": "Summer"})
-    women = [t for t in fig.data if t.name == "Women"]
-    assert len(women) == 3                               # 1896-1912, 1920-1936, 1948-2020: broken at wars
-    assert all(not (t.x[0] < 1916 < t.x[-1]) for t in women)   # no segment bridges a cancelled Games
-    labels = [a.text for a in fig.layout.annotations]
-    assert "WWI" in labels and "WWII" in labels
 
 
 def test_treemap_hierarchy_is_consistent():
@@ -79,5 +64,14 @@ def test_search_respects_filters_and_handles_no_match():
 
 def test_empty_filters_give_placeholder_figures():
     none = {**F, "years": [1916, 1918]}
-    for fig in (ov.fig_participation(none), ov.fig_treemap(none)):
-        assert len(fig.data) == 0 and fig.layout.annotations
+    fig = ov.fig_treemap(none)
+    assert len(fig.data) == 0 and fig.layout.annotations
+
+
+def test_treemap_click_narrows_the_athlete_table():
+    rows, info = ov.search_athletes(F, None, sport="Swimming")
+    assert rows[0]["name"] == "Michael Phelps" and "Swimming athletes" in info
+    rows, _ = ov.search_athletes(F, None, sport="Biathlon")
+    assert all("Biathlon" in r["sports"] for r in rows)
+    rows, _, info = ov.update_athlete_table(F, "phelps", {"points": [{"id": "Winter/Biathlon"}]})
+    assert rows == [] and "Biathlon" in info

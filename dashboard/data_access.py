@@ -1,6 +1,6 @@
 """Load the processed tables once and apply the global filters.
 
-The sidebar writes its state into a `dcc.Store` as a plain dict (see
+The filter panel writes its state into a `dcc.Store` as a plain dict (see
 `DEFAULT_FILTERS`). Charts call `filter_athletes(...)` / `filter_country_games(...)`
 with that dict. The `ignore` argument implements the filter-to-tab matrix from
 docs/analytical_questions.md §4.1, e.g. the Gender tab ignores the Sex filter
@@ -15,6 +15,9 @@ from pathlib import Path
 import pandas as pd
 
 PROCESSED = Path(__file__).resolve().parents[1] / "data" / "processed"
+REFERENCE = Path(__file__).resolve().parents[1] / "data" / "reference"
+# Historic teams NOT folded into a successor: mixed teams and one-off joint teams
+NOT_A_PREDECESSOR = {"ANZ", "COR", "CRT", "WIF"}
 
 YEAR_MIN, YEAR_MAX = 1896, 2022
 
@@ -32,6 +35,27 @@ DEFAULT_FILTERS = {
 def table(name: str) -> pd.DataFrame:
     """Read data/processed/<name>.parquet once per process."""
     return pd.read_parquet(PROCESSED / f"{name}.parquet")
+
+
+@lru_cache(maxsize=1)
+def lineage() -> dict[str, str]:
+    """Historic team -> present-day successor NOC (URS, EUN, ROC -> RUS; FRG, GDR, SAA -> GER; ...).
+
+    Built from the map-placement table (decision D15): a historic team is folded into the
+    present-day NOC whose country it is drawn at. Used where a long-run comparison per
+    country reads better with predecessors combined (specialisation heatmap); everywhere
+    else teams stay as they competed.
+    """
+    place = pd.read_csv(REFERENCE / "noc_map_location.csv")
+    c = table("countries")
+    present = c[c.match_method != "historic"].dropna(subset=["iso3"]).drop_duplicates("iso3")
+    noc_of = dict(zip(present.iso3, present.noc))
+    out = {}
+    for r in place.itertuples():
+        succ = noc_of.get(r.place_iso3)
+        if succ and succ != r.noc and r.noc not in NOT_A_PREDECESSOR:
+            out[r.noc] = succ
+    return out
 
 
 def games_years() -> list[int]:
@@ -113,7 +137,7 @@ def filter_country_games(f: dict, ignore: tuple[str, ...] = ("countries",)) -> p
 
 
 def summary(f: dict) -> dict:
-    """Headline counts for the current filter, used by the sidebar and KPI tiles."""
+    """Headline counts for the current filter, used by the filter panel and KPI tiles."""
     a = filter_athletes(f)
     return {
         "athletes": a.athlete_id.nunique(),

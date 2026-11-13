@@ -22,38 +22,12 @@ def test_counting_unit_body_once_per_sport_age_per_games():
     assert a.duplicated(["athlete_id", "sport"]).any()          # multi-Games athletes appear per Games
 
 
-def test_boxes_sorted_by_median_and_respect_minimum_n():
-    s = ph.box_stats(F, "height_cm")
-    assert (s.n >= ph.MIN_N).all()
-    order = s.drop_duplicates("sport").sort_values("order").sport.tolist()
-    assert order[0] == "Artistic Gymnastics" and order[-1] == "Basketball"
-    assert ((s.q1 <= s["median"]) & (s["median"] <= s.q3) & (s.lo <= s.q1) & (s.q3 <= s.hi)).all()
-
-
-def test_box_click_and_focus_highlight():
-    assert ph.sport_from_box_click({"points": [{"y": "Rowing", "x": 190}]}) == "Rowing"
-    fig = ph.fig_boxes(F, "height_cm", "Rowing")
-    assert any("<b>Rowing</b>" in t for t in fig.layout.yaxis.ticktext)
-    assert fig.layout.height > 1000                             # one row per sport
-
-
-def test_sex_filter_leaves_one_box_per_sport():
-    fig = ph.fig_boxes({**F, "sex": "Female"}, "height_cm", None)
-    assert [t.name for t in fig.data] == ["Women"]
-
-
-def test_density_payload_and_selection():
+def test_density_is_light_and_overlays_the_focus_sport():
     fig = ph.fig_density(F, "Basketball")
-    assert len(fig.to_json()) < 2_500_000                        # server-side contour keeps it light
-    d = ph.density_frame(F)
-    tall = d[d.height_cm > 215]
-    # the shape Dash really sends: positions in the all-athletes layer, no customdata
-    sel = {"points": [{"curveNumber": ph.SELECT_LAYER, "pointIndex": int(i)} for i in tall.index]
-                     + [{"curveNumber": 2, "pointIndex": 0}]}          # focus-sport points are ignored
-    rows, info = ph.selection_rows(F, sel)
-    assert len(rows) == tall.athlete_id.nunique() and "Basketball" in info
-    assert ph.density_frame(F).equals(d)                               # order is reproducible
-    assert ph.selection_rows(F, None)[0] == []
+    assert len(fig.to_json()) < 600_000                           # contour + one sport, no hidden layer
+    assert fig.data[0].type == "contour"
+    names = [t.name for t in fig.data[1:]]
+    assert names and all(n.startswith("Basketball") for n in names)
 
 
 def test_trend_drops_thin_games_and_reports_n():
@@ -76,6 +50,13 @@ def test_focus_sport_options_need_measured_athletes():
 
 def test_empty_states():
     none = {**F, "years": [1916, 1918]}
-    for fig in (ph.fig_boxes(none, "height_cm", None), ph.fig_density(none, "Basketball"),
+    for fig in (ph.fig_density(none, "Basketball"),
                 ph.fig_trend(none, "height_cm", "Basketball"), ph.fig_violin(none, "age", "Basketball")):
         assert len(fig.data) == 0
+
+
+def test_focus_sport_stays_valid_when_filters_change():
+    opts, value = ph.update_focus_sport({**F, "season": "Winter"}, "Basketball")
+    assert value in {o["value"] for o in opts} and value != "Basketball"
+    opts, value = ph.update_focus_sport(F, "Rowing")
+    assert value == "Rowing"
