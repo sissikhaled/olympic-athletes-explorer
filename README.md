@@ -21,9 +21,9 @@ Options: `PORT=8051 python app.py` uses another port; `DASH_DEBUG=1 python app.p
 ## What the dashboard answers
 
 The dashboard investigates **five analytical questions** (one per analytical tab, two on Countries & Medals); the
-Overview tab describes the data. Tabs are icons in a rail on the left. Each question is stated as a heading, and each chart card names what it shows, its chart type and its
-category in the [FT Visual Vocabulary](https://ft-interactive.github.io/visual-vocabulary/) (seven of the nine
-categories are used).
+Overview tab describes the data. Each question is stated as a heading, and each chart card names what it shows,
+its chart type and its category in the [FT Visual Vocabulary](https://ft-interactive.github.io/visual-vocabulary/)
+(seven of the nine categories are used).
 
 | Tab | Analytical question | Charts (evidence) |
 |---|---|---|
@@ -37,9 +37,11 @@ categories are used).
 and the simplification review that removed six charts): [docs/analytical_questions.md](docs/analytical_questions.md).
 
 ### Interacting
+* **Navigation:** the tabs are an icon rail on the left (Olympic rings, medal, runner, ♀♂, ball); a highlight
+  slides to the active one. On a phone the rail becomes a bar at the bottom.
 * **Filters** (years, season, sex, sports, countries): press the round **filter button** at the bottom right to
   open the filter panel. Filters apply to every tab; a badge on the button counts the active ones, and the
-  **Showing:** bar above the tabs states them and any tab-specific exception.
+  **Showing:** bar at the top of the page states them and any tab-specific exception.
 * **Linked views:** click a country in any Countries chart to select it everywhere; click a sport in the treemap
   to list its athletes, or on the gender timeline to add it to the share line; click or lasso sports on the
   similarity map to compare them.
@@ -85,7 +87,7 @@ Highlights (full log with row counts and 16 numbered decisions: [docs/data_prepa
 ## Tests and quality checks
 
 ```bash
-python -m pytest                        # ~600 tests, ~35 s
+python -m pytest                        # 615 tests, ~35 s
 python scripts/benchmark_callbacks.py   # server time per filter change, per tab
 ```
 The suite covers the cleaning rules, every chart builder, linked-view logic, and a sweep of every chart against
