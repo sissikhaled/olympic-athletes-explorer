@@ -1,4 +1,4 @@
-"""Tab 2, Countries & Medals. Q1: what drives a country's Olympic success?
+"""Tab 2, Countries & Medals. Q1: what drives a country's Olympic success? Q2: do hosts win more at home?
 
 Countries chosen in the filter panel are *highlighted* on this tab (not filtered
 out), and clicking a country in the map, scatter or host chart adds/removes it
@@ -42,28 +42,22 @@ def layout():
     heat_controls = segmented("co-heat-metric", ["count", "index"], "count",
                               {"count": "Medal count", "index": "Specialisation index"})
     return html.Div([
-        tab_intro("What drives a country's Olympic success: size, wealth, home advantage or specialisation?",
-                  "The map shows who wins; the three charts below test one possible driver each: the economy and "
-                  "population, hosting the Games, and concentrating on a few sports. Countries chosen in the "
-                  "filters are highlighted here, not filtered out; click a country in any chart to add or "
-                  "remove it.", qid="Q1"),
+        tab_intro("What drives a country's Olympic success: size, wealth or specialisation?",
+                  "The map shows who wins; the two charts below test one possible driver each: the economy and "
+                  "population, and concentrating on a few sports. Countries chosen in the filters are "
+                  "highlighted here, not filtered out; click a country in any chart to add or remove it.",
+                  qid="Q1"),
         chart_card("co-map", "Medals by country",
                    "Proportional-symbol map · choropleth", "Spatial",
                    "Totals are circles (area = medals); historic teams such as the USSR keep their own circle, "
                    "drawn at their main successor. Rates switch to a shaded map (1960 on, present-day countries "
                    "only).",
                    height=500, controls=map_controls),
-        dbc.Row([
-            dbc.Col(chart_card("co-scatter", "Size and wealth: medals vs GDP and population",
-                               "Bubble scatter (log-log)", "Correlation",
-                               "x = GDP, y = medals, bubble area = population. The dashed line is the trend: "
-                               "countries above it win more medals than their economy predicts.",
-                               height=560, controls=scatter_controls), lg=7),
-            dbc.Col(chart_card("co-host", "Home advantage: hosts at home vs usual",
-                               "Dumbbell", "Distribution (dot-plot)",
-                               "Gray dot = the host's usual share of all medals (two Games before and after); "
-                               "blue dot = its share at home. The line is the home boost.", height=600), lg=5),
-        ], className="g-3 my-1"),
+        chart_card("co-scatter", "Size and wealth: medals vs GDP and population",
+                   "Bubble scatter (log-log)", "Correlation",
+                   "x = GDP, y = medals, bubble area = population. The dashed line is the trend: countries above "
+                   "it win more medals than their economy predicts.",
+                   height=520, controls=scatter_controls),
         chart_card("co-heatmap", "Specialisation: medals by country and sport",
                    "XY-heatmap", "Correlation",
                    "Count: darker = more medals. Specialisation index = a country's share of medals in a sport "
@@ -71,6 +65,14 @@ def layout():
                    "combined with their predecessors (marked *): Russia includes the USSR, Germany includes East "
                    "and West Germany; hover a row to see which teams.",
                    height=580, controls=heat_controls),
+        tab_intro("Do hosts win more at home?",
+                  "Each host country's share of all medals at its home Games, compared with its usual share at "
+                  "the two Games before and after. Rank-based, so one season at a time.",
+                  qid="Q2", section=True),
+        chart_card("co-host", "Hosts at home vs their usual share",
+                   "Dumbbell", "Distribution (dot-plot)",
+                   "Gray dot = the host's usual share of all medals (two Games before and after); blue dot = its "
+                   "share at home. The line is the home boost.", height=620),
         data_note("Medal totals follow the official medal table (team medals count once), without Art "
                   "Competitions. Per-sport medals (heatmap) are counted from athlete results the same way. "
                   "Population and GDP: World Bank, 1960 onwards; historic teams have no World Bank data."),

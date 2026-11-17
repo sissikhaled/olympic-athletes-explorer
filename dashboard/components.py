@@ -46,13 +46,14 @@ def chart_card(graph_id: str, title: str, chart: str, ft_category: str,
     return dbc.Card(dbc.CardBody(body), className="chart-card")
 
 
-def tab_intro(title: str, description: str, qid: str | None = None) -> html.Div:
-    """Tab header. With `qid`, the title is the tab's analytical question (Q1-Q4)."""
+def tab_intro(title: str, description: str, qid: str | None = None, section: bool = False) -> html.Div:
+    """Tab header. With `qid`, the title is an analytical question (Q1-Q5).
+    `section=True` starts a second question further down the same tab."""
     heading = [html.Span(qid, className="q-id q-id-lg"), title] if qid else title
     return html.Div([
         html.H2(heading, className="tab-title" + (" tab-question" if qid else "")),
         html.P(description, className="tab-desc"),
-    ], className="tab-intro")
+    ], className="tab-intro" + (" q-section" if section else ""))
 
 
 def data_note(text: str) -> html.Div:

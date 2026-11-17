@@ -9,6 +9,8 @@
   --text-muted: #8a8984;
   --accent: #2a78d6;
   --sidebar-w: 300px;
+  --rail-w: 84px;
+  --nav-h: 74px;          /* keep in sync with NAV_ITEM_H in dashboard/layout.py */
 }
 
 body {
@@ -28,7 +30,7 @@ body {
 .app-sub { color: var(--text-secondary); font-size: 13px; }
 
 /* ---------- content (full width) + slide-in filter panel ---------- */
-.content { max-width: 1500px; margin: 0 auto; padding: 16px 24px 96px; }
+.content { max-width: 1500px; margin: 0 auto; padding: 16px 24px 96px calc(var(--rail-w) + 24px); }
 
 .filter-panel {
   position: fixed; top: 0; right: 0; z-index: 1050;
@@ -77,8 +79,55 @@ body {
 .segmented .form-check:last-child .btn { border-radius: 0 6px 6px 0; }
 .segmented .btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-/* ---------- tabs ---------- */
-.main-tabs { margin-bottom: 12px; }
+/* ---------- left icon rail (replaces the tab header) ---------- */
+.main-tabs { display: none !important; }          /* dbc.Tabs header: the rail drives it */
+.nav-rail {
+  position: fixed; left: 0; top: 57px; bottom: 0; z-index: 30; width: var(--rail-w);
+  padding: 12px 0; background: var(--surface); border-right: 1px solid var(--card-border);
+  display: flex; flex-direction: column;
+}
+.nav-btn {
+  position: relative; z-index: 1; height: var(--nav-h); width: 100%;
+  border: 0; background: none; padding: 0; color: var(--text-secondary);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+  cursor: pointer; transition: color 0.2s ease;
+}
+.nav-icon {
+  width: 28px; height: 28px; background-color: currentColor;
+  mask-size: contain; mask-repeat: no-repeat; mask-position: center;
+  -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.nav-label { font-size: 11px; font-weight: 600; letter-spacing: 0.01em; }
+.nav-btn:hover { color: var(--text-primary); }
+.nav-btn:hover .nav-icon { transform: translateY(-3px) scale(1.12); }
+.nav-btn:focus-visible { outline: 2px solid #9cc3f0; outline-offset: -4px; border-radius: 12px; }
+.nav-btn.active { color: var(--accent); }
+.nav-btn.active .nav-icon { animation: nav-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+/* highlight pill that slides (with a little overshoot) to the active icon */
+.nav-indicator {
+  position: absolute; left: 8px; right: 8px; top: 12px; height: var(--nav-h); z-index: 0;
+  border-radius: 14px; background: #eef4fc;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.nav-indicator::before {               /* accent bar on the left edge */
+  content: ""; position: absolute; left: -8px; top: 18px; bottom: 18px; width: 4px;
+  border-radius: 0 4px 4px 0; background: var(--accent);
+}
+@keyframes nav-pop {
+  0% { transform: scale(0.7) rotate(-12deg); }
+  60% { transform: scale(1.18) rotate(6deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+/* the newly opened tab glides in */
+.tab-content > .tab-pane.active { animation: tab-in 0.38s ease-out; }
+@keyframes tab-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .nav-indicator, .nav-icon, .nav-btn { transition: none; }
+  .nav-btn.active .nav-icon, .tab-content > .tab-pane.active { animation: none; }
+}
+
+/* ---------- tab content ---------- */
 .main-tabs .nav-link { color: var(--text-secondary); font-weight: 500; padding: 8px 14px; }
 .main-tabs .nav-link.active { color: var(--text-primary); font-weight: 600; }
 .tab-intro { margin: 4px 0 14px; }
@@ -86,6 +135,7 @@ body {
 .tab-desc { color: var(--text-secondary); max-width: 900px; margin-bottom: 0; }
 /* the tab's analytical question (Q1-Q4): the one thing each analytical tab answers */
 .tab-question { font-size: 19px; line-height: 1.35; max-width: 1000px; }
+.q-section { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--card-border); }
 .q-id-lg { font-size: 13px; padding: 2px 8px; margin-right: 10px; vertical-align: 3px; }
 
 /* ---------- chart cards ---------- */
@@ -118,8 +168,14 @@ body {
 
 /* ---------- small screens ---------- */
 @media (max-width: 900px) {
-  .content { padding: 12px 16px 96px; }
-  .filter-fab { right: 16px; bottom: 16px; }
+  .content { padding: 12px 16px 110px; }
+  .filter-fab { right: 16px; bottom: 82px; }
+  /* the rail becomes a bottom bar on phones */
+  .nav-rail { top: auto; bottom: 0; right: 0; width: auto; height: 66px; padding: 0 4px;
+              flex-direction: row; border-right: 0; border-top: 1px solid var(--card-border); }
+  .nav-btn { height: 66px; flex: 1; }
+  .nav-indicator { display: none; }
+  .nav-btn.active { background: #eef4fc; }
 }
 
 /* ---------- Dash 4 slider in the accent colour ---------- */

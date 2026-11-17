@@ -1,4 +1,5 @@
 """Smoke tests for the Dash app: layout builds, IDs are unique, filters work."""
+import json
 import sys
 from collections import Counter
 from pathlib import Path
@@ -15,8 +16,8 @@ pytestmark = pytest.mark.skipif(not (ROOT / "data" / "processed" / "athlete_game
 def _ids(component, found=None):
     found = [] if found is None else found
     cid = getattr(component, "id", None)
-    if cid is not None:
-        found.append(cid)
+    if cid is not None:                       # pattern-matching ids are dicts: compare them as text
+        found.append(json.dumps(cid, sort_keys=True) if isinstance(cid, dict) else cid)
     children = getattr(component, "children", None)
     if isinstance(children, (list, tuple)):
         for c in children:
@@ -36,17 +37,18 @@ def test_app_imports_and_layout_builds():
         assert required in ids
 
 
-def test_one_analytical_question_per_tab():
-    """Analytical tabs state one question (Q1-Q4); the Overview is descriptive; charts have plain titles."""
+def test_analytical_questions_per_tab():
+    """Analytical questions Q1-Q5 sit in tab headers; the Overview is descriptive; charts have plain titles."""
     from dashboard.layout import TABS
     import json
     import re
-    expected = {"overview": None, "countries": "Q1", "physiques": "Q2", "gender": "Q3", "sports": "Q4"}
+    expected = {"overview": None, "countries": {"Q1", "Q2"}, "physiques": {"Q3"}, "gender": {"Q4"},
+                "sports": {"Q5"}}
     for tab in TABS:
         text = json.dumps(tab.layout().to_plotly_json(), default=str)
         found = set(re.findall(r"\bQ\d(?:\.\d)?\b", text))
         want = expected[tab.TAB_ID]
-        assert found == ({want} if want else set()), f"{tab.TAB_ID}: {found}"
+        assert found == (want or set()), f"{tab.TAB_ID}: {found}"
 
 
 def test_filters_narrow_the_data():
@@ -128,3 +130,16 @@ def test_filter_badge_counts_active_filters():
     assert cb.active_filter_count(da.DEFAULT_FILTERS) == 0
     assert cb.active_filter_count({**da.DEFAULT_FILTERS, "season": "Winter", "countries": ["NOR"]}) == 2
     assert cb.show_filter_count(da.DEFAULT_FILTERS)[1].endswith("d-none")
+
+
+def test_icon_rail_covers_every_tab_and_tracks_the_active_one():
+    from dashboard import callbacks as cb
+    from dashboard.layout import NAV, NAV_ITEM_H, TABS
+    assert [t for t, _, _ in NAV] == [t.TAB_ID for t in TABS]
+    for _, _, icon in NAV:
+        assert (ROOT / "assets" / "icons" / f"{icon}.svg").exists()
+    classes, style = cb.nav_state("gender")
+    assert classes.count("nav-btn active") == 1 and classes[3] == "nav-btn active"
+    assert style["transform"] == f"translateY({3 * NAV_ITEM_H}px)"
+    css = (ROOT / "assets" / "style.css").read_text()
+    assert f"--nav-h: {NAV_ITEM_H}px" in css                     # CSS and Python agree on the step

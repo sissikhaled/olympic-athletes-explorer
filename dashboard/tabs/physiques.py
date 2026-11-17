@@ -1,4 +1,4 @@
-"""Tab 3, Athlete Physiques. Q2: how do athletes' bodies differ between sports, how have they changed, and do medallists stand out?
+"""Tab 3, Athlete Physiques. Q3: how do athletes' bodies differ between sports, how have they changed, and do medallists stand out?
 
 Counting unit: height, weight and BMI barely change during a career, so each
 athlete counts ONCE per sport (their latest Games in the filter). Age does
@@ -44,7 +44,7 @@ def layout():
                   "stand out?",
                   "Pick a measure and a focus sport; all three charts follow. The trend shows how the sport's "
                   "athletes changed over the decades, the cloud places them among all Olympians, and the violin "
-                  "compares medallists with the rest of the field.", qid="Q2"),
+                  "compares medallists with the rest of the field.", qid="Q3"),
         controls,
         chart_card("ph-trend", "Focus sport over the decades",
                    "Trend with interquartile band", "Change v Time (fan)",

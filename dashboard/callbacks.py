@@ -1,7 +1,8 @@
 """Global callbacks: filter panel -> filter store, reset, dependent options, panel toggle, About."""
-from dash import Input, Output, State, callback, ctx, html, no_update
+from dash import ALL, Input, Output, State, callback, ctx, html, no_update
 
 from . import data_access as da
+from .layout import NAV, NAV_ITEM_H
 
 FILTER_INPUTS = ["flt-years", "flt-season", "flt-sex", "flt-sports", "flt-hide-minor", "flt-countries"]
 
@@ -85,6 +86,29 @@ def active_filter_count(f: dict) -> int:
 def show_filter_count(f):
     n = active_filter_count(f)
     return (str(n), "fab-badge") if n else ("", "fab-badge d-none")
+
+
+@callback(Output("tabs", "active_tab"), Input({"type": "nav", "index": ALL}, "n_clicks"),
+          prevent_initial_call=True)
+def navigate(clicks):
+    """A click on a rail icon switches the tab."""
+    if not ctx.triggered_id or not any(clicks or []):
+        return no_update
+    return ctx.triggered_id["index"]
+
+
+def nav_state(active: str) -> tuple[list[str], dict]:
+    """Rail button classes and the sliding indicator's position for the active tab."""
+    ids = [t for t, _, _ in NAV]
+    i = ids.index(active) if active in ids else 0
+    classes = ["nav-btn active" if t == active else "nav-btn" for t in ids]
+    return classes, {"transform": f"translateY({i * NAV_ITEM_H}px)"}
+
+
+@callback(Output({"type": "nav", "index": ALL}, "className"), Output("nav-indicator", "style"),
+          Input("tabs", "active_tab"))
+def show_active_nav(active):
+    return nav_state(active)
 
 
 @callback(Output("about-modal", "is_open"), Input("about-open", "n_clicks"),

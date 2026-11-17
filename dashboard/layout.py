@@ -1,4 +1,4 @@
-"""Page frame: header, floating filter button + slide-in filter panel, tabs, About modal, footer."""
+"""Page frame: header, left icon rail (tabs), floating filter button + slide-in filter panel, About modal, footer."""
 from dash import dcc, html
 import dash_bootstrap_components as dbc
 
@@ -7,6 +7,30 @@ from .components import segmented
 from .tabs import countries, gender, overview, physiques, sports
 
 TABS = [overview, countries, physiques, gender, sports]
+
+# Left rail: (tab id, short label, icon in assets/icons). The icons are line drawings used as
+# CSS masks, so they take the text colour and change with hover / active state.
+NAV = [(overview.TAB_ID, "Overview", "rings"), (countries.TAB_ID, "Countries", "medal"),
+       (physiques.TAB_ID, "Physiques", "runner"), (gender.TAB_ID, "Gender", "gender"),
+       (sports.TAB_ID, "Sports", "ball")]
+NAV_ITEM_H = 74          # px; keep in sync with .nav-btn height in assets/style.css
+
+
+def nav_rail() -> html.Nav:
+    """Vertical icon navigation. It drives the (hidden) dbc.Tabs header through its active_tab,
+    so every chart callback keeps listening to the same Input("tabs", "active_tab")."""
+    full = {t.TAB_ID: t.LABEL for t in TABS}
+    buttons = [
+        html.Button([
+            html.Span(className="nav-icon", style={"maskImage": f"url(/assets/icons/{icon}.svg)",
+                                                   "WebkitMaskImage": f"url(/assets/icons/{icon}.svg)"}),
+            html.Span(label, className="nav-label"),
+        ], id={"type": "nav", "index": tab_id}, title=full[tab_id], n_clicks=0,
+            className="nav-btn active" if tab_id == overview.TAB_ID else "nav-btn")
+        for tab_id, label, icon in NAV
+    ]
+    return html.Nav([html.Div(id="nav-indicator", className="nav-indicator"), *buttons],
+                    className="nav-rail", **{"aria-label": "Dashboard sections"})
 
 
 def _year_marks() -> dict:
@@ -108,7 +132,7 @@ def serve_layout() -> html.Div:
     ], className="app-header")
 
     tabs = dbc.Tabs([dbc.Tab(t.layout(), label=t.LABEL, tab_id=t.TAB_ID) for t in TABS],
-                    id="tabs", active_tab=overview.TAB_ID, className="main-tabs")
+                    id="tabs", active_tab=overview.TAB_ID, className="main-tabs")   # header hidden by CSS
 
     footer = html.Div([
         "Sources: Olympedia.org via Kaggle (M. Ehsan, CC BY 4.0) · World Bank Open Data (CC BY 4.0). ",
@@ -118,6 +142,7 @@ def serve_layout() -> html.Div:
     return html.Div([
         dcc.Store(id="filters", data=da.DEFAULT_FILTERS),
         header,
+        nav_rail(),
         html.Main([html.Div(id="filter-bar", className="filter-bar"), tabs, footer], className="content"),
         filter_panel(),
         filter_button(),

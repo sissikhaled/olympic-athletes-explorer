@@ -1,4 +1,4 @@
-"""Tab 5, Sport Comparison. Q4: which sports select for similar athletes?
+"""Tab 5, Sport Comparison. Q5: which sports select for similar athletes?
 
 Sport profiles are recomputed for the global filters (years, season, sex,
 countries; the Sports filter is ignored - this tab has its own picker).
@@ -52,7 +52,7 @@ def layout():
                   "The map places every sport by the athletes it attracts (body size, age and share of women), so "
                   "similar sports sit close together; the violins then compare the chosen sports' full "
                   "distributions. The Sports filter does not apply here; use the picker or click sports on the "
-                  "map.", qid="Q4"),
+                  "map.", qid="Q5"),
         picker,
         chart_card("sp-pca", "Sport similarity map",
                    "Similarity map (PCA scatter)", "Correlation",

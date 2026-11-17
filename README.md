@@ -20,18 +20,18 @@ Options: `PORT=8051 python app.py` uses another port; `DASH_DEBUG=1 python app.p
 
 ## What the dashboard answers
 
-The dashboard investigates **four analytical questions**, one per analytical tab; the Overview tab describes the
-data. Each tab states its question at the top, and each chart card names what it shows, its chart type and its
+The dashboard investigates **five analytical questions** (one per analytical tab, two on Countries & Medals); the
+Overview tab describes the data. Tabs are icons in a rail on the left. Each question is stated as a heading, and each chart card names what it shows, its chart type and its
 category in the [FT Visual Vocabulary](https://ft-interactive.github.io/visual-vocabulary/) (seven of the nine
 categories are used).
 
 | Tab | Analytical question | Charts (evidence) |
 |---|---|---|
 | **Overview** | (descriptive: what is in the data) | KPI tiles, treemap of sports and events, searchable athlete table + career card |
-| **Countries & Medals** | **Q1** What drives a country's Olympic success: size, wealth, home advantage or specialisation? | medal map (proportional symbols / choropleth, play mode), medals vs GDP bubble scatter, host dumbbell, specialisation heatmap |
-| **Physiques** | **Q2** How do athletes' bodies differ between sports, how have they changed, and do medallists stand out? | median + IQR trend, height × weight density, split violin |
-| **Gender** | **Q3** How did women gain their place at the Games, over time, across sports and across countries? | annotated share line, sport timeline, spine chart |
-| **Sport Comparison** | **Q4** Which sports select for similar athletes? | PCA similarity map with loadings, violins |
+| **Countries & Medals** | **Q1** What drives a country's Olympic success: size, wealth or specialisation?<br>**Q2** Do hosts win more at home? | Q1: medal map (proportional symbols / choropleth, play mode), medals vs GDP bubble scatter, specialisation heatmap · Q2: host dumbbell |
+| **Physiques** | **Q3** How do athletes' bodies differ between sports, how have they changed, and do medallists stand out? | median + IQR trend, height × weight density, split violin |
+| **Gender** | **Q4** How did women gain their place at the Games, over time, across sports and across countries? | annotated share line, sport timeline, spine chart |
+| **Sport Comparison** | **Q5** Which sports select for similar athletes? | PCA similarity map with loadings, violins |
 
 16 chart forms. Full design rationale (why each form fits its question, interactions, colour system,
 and the simplification review that removed six charts): [docs/analytical_questions.md](docs/analytical_questions.md).
@@ -98,7 +98,7 @@ that empty charts explain why.
 ├── app.py                 entry point: python app.py
 ├── requirements.txt       pinned dependencies
 ├── REQUIREMENTS.md        assignment brief (reference)
-├── assets/style.css       page styling (loaded automatically by Dash)
+├── assets/               style.css (page styling, animations) and icons/ (rail icons, SVG)
 ├── data/
 │   ├── raw/               downloaded data (not in git)
 │   ├── reference/         hand-made lookup tables: NOC → ISO3, map placement of historic teams
@@ -109,7 +109,7 @@ that empty charts explain why.
 │   ├── theme.py           validated colours, Plotly template, empty-state figure
 │   ├── data_access.py     loads tables once, applies the global filters (cached)
 │   ├── components.py      chart card, controls, data grid, per-tab callback helper
-│   ├── layout.py          header, filter button + panel, filter bar, tabs, About dialog
+│   ├── layout.py          header, icon rail, filter button + panel, filter bar, tabs, About dialog
 │   ├── callbacks.py       filter panel → filter store, reset, summary, filter bar, badge
 │   └── tabs/              overview · countries · physiques · gender · sports
 ├── docs/
