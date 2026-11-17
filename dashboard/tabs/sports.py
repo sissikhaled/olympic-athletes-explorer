@@ -1,4 +1,4 @@
-"""Tab 5, Sport Comparison: which sports are alike? (Q5.1-Q5.2)
+"""Tab 5, Sport Comparison. Q4: which sports select for similar athletes?
 
 Sport profiles are recomputed for the global filters (years, season, sex,
 countries; the Sports filter is ignored - this tab has its own picker).
@@ -48,18 +48,19 @@ def layout():
         dcc.Store(id="sp-colors", data=compare_colors(DEFAULT_COMPARE)),
     ], className="mb-3")
     return html.Div([
-        tab_intro("Which sports are alike?",
-                  "Sports placed by the athletes they attract (body size, age and share of women), then "
-                  "compared side by side. The Sports filter does not apply here; use the picker or click "
-                  "sports on the map."),
+        tab_intro("Which sports select for similar athletes?",
+                  "The map places every sport by the athletes it attracts (body size, age and share of women), so "
+                  "similar sports sit close together; the violins then compare the chosen sports' full "
+                  "distributions. The Sports filter does not apply here; use the picker or click sports on the "
+                  "map.", qid="Q4"),
         picker,
-        chart_card("sp-pca", "Q5.1", "Which sports have similar athletes?",
+        chart_card("sp-pca", "Sport similarity map",
                    "Similarity map (PCA scatter)", "Correlation",
                    "Close sports have similar athletes. Each axis summarises several measures (named on the "
                    "axis; arrows show which way each measure grows). Circle = Summer, diamond = Winter, size = "
                    "athletes. Click a sport to add or remove it; box/lasso select to compare a group.",
                    height=560, selectable=True),
-        chart_card("sp-dist", "Q5.2", "How different are the chosen sports' athletes?",
+        chart_card("sp-dist", "The chosen sports side by side",
                    "Violins (small multiples)", "Distribution",
                    "One violin per sport for height, weight and age; line = median. Where violins overlap, the "
                    "sports draw similar athletes; hover a median for the exact value and n.", height=460),
@@ -135,7 +136,7 @@ def compare_colors(selected: list[str], previous: dict[str, str] | None = None) 
     return {s: out[s] for s in selected[:MAX_COMPARE]}
 
 
-# ====================================================================== Q5.1 map
+# ====================================================================== similarity map
 def fig_pca(f: dict, colors: dict[str, str]) -> go.Figure:
     m, load, var = pca_map(f)
     if m.empty:
@@ -181,7 +182,7 @@ def fig_pca(f: dict, colors: dict[str, str]) -> go.Figure:
     return fig
 
 
-# ====================================================================== Q5.2 distributions
+# ====================================================================== distributions
 DIST_MEASURES = [("height_cm", "Height (cm)"), ("weight_kg", "Weight (kg)"), ("age", "Age (years)")]
 
 

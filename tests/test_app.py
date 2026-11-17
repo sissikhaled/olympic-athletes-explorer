@@ -36,21 +36,17 @@ def test_app_imports_and_layout_builds():
         assert required in ids
 
 
-def test_every_tab_has_its_questions():
+def test_one_analytical_question_per_tab():
+    """Analytical tabs state one question (Q1-Q4); the Overview is descriptive; charts have plain titles."""
     from dashboard.layout import TABS
     import json
-    expected = {"overview": ["Q1.1", "Q1.2", "Q1.3"],
-                "countries": [f"Q2.{i}" for i in range(1, 5)],
-                "physiques": [f"Q3.{i}" for i in range(1, 4)],
-                "gender": [f"Q4.{i}" for i in range(1, 4)],
-                "sports": [f"Q5.{i}" for i in range(1, 3)]}
+    import re
+    expected = {"overview": None, "countries": "Q1", "physiques": "Q2", "gender": "Q3", "sports": "Q4"}
     for tab in TABS:
         text = json.dumps(tab.layout().to_plotly_json(), default=str)
-        for q in expected[tab.TAB_ID]:
-            assert q in text, f"{q} missing on tab {tab.TAB_ID}"
-        last = expected[tab.TAB_ID][-1]
-        nxt = last[:-1] + str(int(last[-1]) + 1)
-        assert f'"{nxt}"' not in text, f"{nxt} should not exist on tab {tab.TAB_ID}"
+        found = set(re.findall(r"\bQ\d(?:\.\d)?\b", text))
+        want = expected[tab.TAB_ID]
+        assert found == ({want} if want else set()), f"{tab.TAB_ID}: {found}"
 
 
 def test_filters_narrow_the_data():

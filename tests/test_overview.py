@@ -1,4 +1,4 @@
-"""Tests for the Overview tab builders (Q1.1-Q1.3)."""
+"""Tests for the Overview tab builders (KPIs, treemap, athlete search)."""
 import sys
 from pathlib import Path
 
@@ -75,3 +75,13 @@ def test_treemap_click_narrows_the_athlete_table():
     assert all("Biathlon" in r["sports"] for r in rows)
     rows, _, info = ov.update_athlete_table(F, "phelps", {"points": [{"id": "Winter/Biathlon"}]})
     assert rows == [] and "Biathlon" in info
+
+
+def test_treemap_puts_each_sport_under_its_own_season():
+    n = ov.treemap_frame(F)
+    sports = n[n.level == "sport"]
+    assert not sports.label.duplicated().any()                       # one tile per sport
+    skating = sports.set_index("label").loc["Figure Skating"]
+    assert skating.parent == "Winter" and "1908 and 1920 Summer Games" in skating.note
+    assert sports.set_index("label").loc["Ice Hockey"].parent == "Winter"
+    assert n[n.level == "season"].value.sum() == len(da.filter_events(F))   # nothing dropped

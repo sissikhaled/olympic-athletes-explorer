@@ -84,6 +84,9 @@ body {
 .tab-intro { margin: 4px 0 14px; }
 .tab-title { font-size: 20px; font-weight: 700; margin-bottom: 2px; }
 .tab-desc { color: var(--text-secondary); max-width: 900px; margin-bottom: 0; }
+/* the tab's analytical question (Q1-Q4): the one thing each analytical tab answers */
+.tab-question { font-size: 19px; line-height: 1.35; max-width: 1000px; }
+.q-id-lg { font-size: 13px; padding: 2px 8px; margin-right: 10px; vertical-align: 3px; }
 
 /* ---------- chart cards ---------- */
 .chart-card { border: 1px solid var(--card-border); border-radius: 8px; background: var(--surface); margin-bottom: 12px; }

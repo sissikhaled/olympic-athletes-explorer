@@ -1,4 +1,4 @@
-"""Tab 1, Overview: what is in the data? (Q1.1-Q1.3)
+"""Tab 1, Overview: what is in the data? (descriptive, no analytical question)
 
 Chart builders are plain functions (filters in, figure/rows out) so they can
 be tested without a browser; the @callback functions only wire them to the page.
@@ -8,6 +8,7 @@ from __future__ import annotations
 import unicodedata
 from functools import lru_cache
 
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from dash import Input, Output, callback, html
@@ -35,25 +36,22 @@ def kpi_tile(id_: str, label: str) -> dbc.Col:
 
 def layout():
     return html.Div([
-        tab_intro("What is in the data?",
+        tab_intro("The data at a glance",
                   "126 years of Olympic athletes at a glance: how big the Games are, how the programme is "
                   "built, and a search for any individual athlete."),
-        html.Div([html.Div([html.Span("Q1.1", className="q-id"),
-                            html.Span("How big are the Games in the current selection?", className="q-text")]),
+        html.Div([html.Div(html.Span("The Games in the current selection", className="q-text")),
                   html.Div(id="kpi-context", className="chart-name")],
                  className="card-head mb-2"),
         dbc.Row([kpi_tile(i, l) for i, l in KPIS], className="g-2 mb-3"),
         chart_card(
-            "ov-treemap", "Q1.2", "Which sports and events attract the most athletes?",
+            "ov-treemap", "Sports and events by number of athletes",
             "Treemap", "Part to whole",
-            "Area = athlete entries (one athlete in one event); Summer in yellow, Winter in blue. Click a sport "
-            "to zoom into its events and to list its most decorated athletes in Q1.3; click the top bar to "
-            "zoom back out.",
+            "Area = athlete entries (one athlete in one event); Summer sports in yellow, Winter sports in blue. "
+            "Click a sport to zoom into its events and to list its most decorated athletes in the search "
+            "table; click the top bar to zoom back out.",
             height=560),
         dbc.Card(dbc.CardBody([
-            html.Div([html.Div([html.Span("Q1.3", className="q-id"),
-                                html.Span("Who is a specific athlete, and what did they achieve?",
-                                          className="q-text")]),
+            html.Div([html.Div(html.Span("Athlete search", className="q-text")),
                       html.Span("Searchable table", className="chart-name")], className="card-head"),
             dbc.Input(id="ov-search", placeholder="Search by name, e.g. 'phelps' or 'comaneci' (accents optional)…",
                       type="search", debounce=True, className="mb-2"),
@@ -62,12 +60,12 @@ def layout():
             html.Div(id="ov-athlete-card", className="mt-3"),
             html.Div([html.Span("How to read: ", className="fw-semibold"),
                       "Without a search the table lists the most decorated athletes in the current filters "
-                      "(and in the sport clicked in Q1.2, if any). Click a row to open the athlete's full career."], className="how-to-read"),
+                      "(and in the sport clicked in the treemap, if any). Click a row to open the athlete's full career."], className="how-to-read"),
         ]), className="chart-card"),
     ])
 
 
-# ====================================================================== Q1.1 KPIs
+# ====================================================================== KPIs
 def kpi_values(f: dict) -> dict:
     a = da.filter_athletes(f)
     e = da.filter_events(f)
@@ -99,21 +97,35 @@ def _delta_text(now: int, before: int, label: str) -> str:
     return f"{arrow} {abs(pct):.0f}% vs {label}"
 
 
-# ====================================================================== Q1.2 treemap
+# ====================================================================== treemap
 def treemap_frame(f: dict) -> pd.DataFrame:
-    """Nodes for Season -> Sport -> Event, valued by athlete entries."""
+    """Nodes for Season -> Sport -> Event, valued by athlete entries.
+
+    Each sport sits under its OWN season (sports table), not the season of the Games:
+    figure skating (1908, 1920) and ice hockey (1920) were held at Summer Games before the
+    Winter Games began in 1924, but they are Winter sports. Those entries stay counted, under
+    Winter, and the hover says so."""
     e = da.filter_events(f)
+    if e.empty:
+        return pd.DataFrame()
+    sport_season = da.table("sports").set_index("sport").season
+    e = e.assign(games_season=e.season, season=e.sport.map(sport_season).fillna(e.season))
     leaf = e.groupby(["season", "sport", "event"], observed=True).size().rename("value").reset_index()
-    if leaf.empty:
-        return leaf
     sport = leaf.groupby(["season", "sport"], as_index=False).value.sum()
+    # entries of a sport at Games of the other season, e.g. figure skating at the 1908 Summer Games
+    other = e[e.games_season != e.season]
+    def _years(g):
+        y = [str(v) for v in sorted(set(g.year))]
+        return y[0] if len(y) == 1 else ", ".join(y[:-1]) + " and " + y[-1]
+    note = {sp: f"incl. {len(g):,} entries at the {_years(g)} {g.games_season.iloc[0]} Games, "
+                "before the Winter Games began" for sp, g in other.groupby("sport")}
     season = leaf.groupby("season", as_index=False).value.sum()
     nodes = pd.concat([
-        season.assign(id=season.season, label=season.season, parent="", level="season"),
+        season.assign(id=season.season, label=season.season, parent="", level="season", note=""),
         sport.assign(id=sport.season + "/" + sport.sport, label=sport.sport, parent=sport.season,
-                     level="sport"),
+                     level="sport", note=sport.sport.map(lambda sp: note.get(sp, ""))),
         leaf.assign(id=leaf.season + "/" + leaf.sport + "/" + leaf.event,
-                    label=leaf.event, parent=leaf.season + "/" + leaf.sport, level="event"),
+                    label=leaf.event, parent=leaf.season + "/" + leaf.sport, level="event", note=""),
     ], ignore_index=True)
     return nodes
 
@@ -133,9 +145,10 @@ def fig_treemap(f: dict) -> go.Figure:
         maxdepth=2, marker=dict(colors=colors, line=dict(width=1, color="white")),
         textfont=dict(color=TEXT_PRIMARY), insidetextfont=dict(color=TEXT_PRIMARY),
         texttemplate="<b>%{label}</b><br>%{value:,}",
-        customdata=(n.value / total * 100).round(1),
-        hovertemplate="<b>%{label}</b><br>%{value:,} athlete entries<br>%{customdata}% of all entries"
-                      "<br>part of %{parent}<extra></extra>",
+        customdata=np.stack([(n.value / total * 100).round(1),
+                             n.note.map(lambda t: f"<br><i>{t}</i>" if t else "")], axis=1),
+        hovertemplate="<b>%{label}</b><br>%{value:,} athlete entries<br>%{customdata[0]}% of all entries"
+                      "<br>part of %{parent}%{customdata[1]}<extra></extra>",
         pathbar=dict(visible=True, thickness=22),
         tiling=dict(pad=2),
     ))
@@ -153,7 +166,7 @@ def sport_from_click(click) -> str | None:
     return parts[1] if len(parts) >= 2 else None
 
 
-# ====================================================================== Q1.3 athlete search
+# ====================================================================== athlete search
 def _fold(s: str) -> str:
     """Lower-case and strip accents so 'comaneci' finds 'Comăneci'."""
     return unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode().lower()

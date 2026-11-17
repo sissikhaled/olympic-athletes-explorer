@@ -12,19 +12,19 @@ from .theme import GRAPH_CONFIG, GRAPH_CONFIG_SELECT, MEDAL_COLORS, MEDAL_ORDER,
 FT_URL = "https://ft-interactive.github.io/visual-vocabulary/"
 
 
-def chart_card(graph_id: str, qid: str, question: str, chart: str, ft_category: str,
+def chart_card(graph_id: str, title: str, chart: str, ft_category: str,
                how_to_read: str, height: int | None = 380, selectable: bool = False,
                controls=None) -> dbc.Card:
-    """One chart = one card: question on top, chart, then a 'how to read' hint.
+    """One chart = one card: a plain title on top, chart, then a 'how to read' hint.
+
+    The analytical question is stated once per tab (tab_intro); the charts are the
+    evidence for it, so they carry descriptive titles, not questions of their own.
 
     `ft_category` is the Financial Times Visual Vocabulary category the chart
     belongs to (shown as a badge so the chart choice is always explained).
     """
     header = html.Div([
-        html.Div([
-            html.Span(qid, className="q-id"),
-            html.Span(question, className="q-text"),
-        ]),
+        html.Div(html.Span(title, className="q-text")),
         html.Div([
             html.Span(chart, className="chart-name"),
             html.A(ft_category, href=FT_URL, target="_blank", className="ft-badge",
@@ -46,9 +46,11 @@ def chart_card(graph_id: str, qid: str, question: str, chart: str, ft_category: 
     return dbc.Card(dbc.CardBody(body), className="chart-card")
 
 
-def tab_intro(theme_question: str, description: str) -> html.Div:
+def tab_intro(title: str, description: str, qid: str | None = None) -> html.Div:
+    """Tab header. With `qid`, the title is the tab's analytical question (Q1-Q4)."""
+    heading = [html.Span(qid, className="q-id q-id-lg"), title] if qid else title
     return html.Div([
-        html.H2(theme_question, className="tab-title"),
+        html.H2(heading, className="tab-title" + (" tab-question" if qid else "")),
         html.P(description, className="tab-desc"),
     ], className="tab-intro")
 

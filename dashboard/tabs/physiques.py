@@ -1,4 +1,4 @@
-"""Tab 3, Athlete Physiques: what body does each sport select for? (Q3.1-Q3.3)
+"""Tab 3, Athlete Physiques. Q2: how do athletes' bodies differ between sports, how have they changed, and do medallists stand out?
 
 Counting unit: height, weight and BMI barely change during a career, so each
 athlete counts ONCE per sport (their latest Games in the filter). Age does
@@ -40,23 +40,24 @@ def layout():
                 className="d-flex align-items-center", width="auto"),
     ], className="g-3 mb-2 align-items-center")
     return html.Div([
-        tab_intro("What body does each sport select for?",
-                  "How the athletes of one sport have changed over the decades, where they sit among all "
-                  "Olympians, and whether medallists differ from the rest of the field. Pick a measure and a "
-                  "focus sport; all three charts follow."),
+        tab_intro("How do athletes' bodies differ between sports, how have they changed, and do medallists "
+                  "stand out?",
+                  "Pick a measure and a focus sport; all three charts follow. The trend shows how the sport's "
+                  "athletes changed over the decades, the cloud places them among all Olympians, and the violin "
+                  "compares medallists with the rest of the field.", qid="Q2"),
         controls,
-        chart_card("ph-trend", "Q3.1", "Have athletes in the focus sport changed over the decades?",
+        chart_card("ph-trend", "Focus sport over the decades",
                    "Trend with interquartile band", "Change v Time (fan)",
                    "Line = median per Games, band = middle 50 % of athletes; dashed = all sports of the same "
                    "season. Games with fewer than 8 measured athletes are left out; hover shows n.",
                    height=440),
         dbc.Row([
-            dbc.Col(chart_card("ph-density", "Q3.2", "Where does the sport sit among all Olympians?",
+            dbc.Col(chart_card("ph-density", "Focus sport among all Olympians (height × weight)",
                                "2D density + overlay", "Correlation · Distribution",
                                "Gray contours = where all athletes are in height × weight; coloured dots = the "
                                "focus sport's athletes (hover for names).",
                                height=460), lg=7),
-            dbc.Col(chart_card("ph-violin", "Q3.3", "Do medallists differ physically from other competitors?",
+            dbc.Col(chart_card("ph-violin", "Medallists vs the rest of the field",
                                "Split violin", "Distribution",
                                "Left (gold) half = athletes who won a medal at that Games; right (gray) half = "
                                "everyone else in the focus sport. Lines mark the medians.",
@@ -83,7 +84,7 @@ def sport_options(f: dict) -> list[dict]:
     return [{"label": f"{s} ({n:,} measured)", "value": s} for s, n in counts.sort_index().items() if n >= MIN_N]
 
 
-# ====================================================================== Q3.2 density
+# ====================================================================== density (all Olympians)
 def density_frame(f: dict) -> pd.DataFrame:
     """One row per athlete per sport (latest Games) with both height and weight."""
     a = da.filter_athletes(f)
@@ -127,7 +128,7 @@ def fig_density(f: dict, focus: str | None) -> go.Figure:
     return fig
 
 
-# ====================================================================== Q3.1 trend
+# ====================================================================== trend over the decades
 def trend_stats(f: dict, measure: str, sport: str | None) -> pd.DataFrame:
     d = physique_frame(f, measure)
     if sport:
@@ -177,7 +178,7 @@ def fig_trend(f: dict, measure: str, focus: str | None) -> go.Figure:
     return fig
 
 
-# ====================================================================== Q3.3 split violin
+# ====================================================================== split violin (medallists)
 def fig_violin(f: dict, measure: str, focus: str | None) -> go.Figure:
     if not focus:
         return empty_figure("No sport to focus on",

@@ -1,4 +1,4 @@
-"""Tab 4, Gender Participation: how did women enter the Games? (Q4.1-Q4.3)
+"""Tab 4, Gender Participation. Q3: how did women gain their place at the Games?
 
 The Sex filter is ignored here (this tab compares the sexes); all
 other filters apply. Counts are distinct athletes who started at least one
@@ -39,33 +39,33 @@ LABEL_OFFSETS = {("Summer", 2004): (-95, -14), ("Summer", 2012): (-40, -58), ("W
 
 
 # ====================================================================== layout
-NO_SPORT = "none: click a sport in Q4.2"
+NO_SPORT = "none: click a sport on the timeline"
 
 
 def layout():
     return html.Div([
         dcc.Store(id="ge-sport"),
-        tab_intro("How did women enter the Games?",
+        tab_intro("How did women gain their place at the Games, over time, across sports and across countries?",
                   "From the first women in 1900 (2 % of athletes) to 48 % in 2020: the overall trend, when each "
                   "sport opened to women, and which countries send balanced teams. The Sex filter does not "
-                  "apply here, because this tab compares the sexes."),
+                  "apply here, because this tab compares the sexes.", qid="Q3"),
         html.Div([html.Span("Following sport: ", className="small text-secondary"),
                   html.Span(NO_SPORT, id="ge-sport-label", className="small fw-semibold me-2"),
                   dbc.Button("Clear", id="ge-sport-clear", size="sm", color="link", className="p-0 align-baseline")],
                  className="mb-2"),
-        chart_card("ge-share", "Q4.1", "How did women's share of athletes evolve?",
+        chart_card("ge-share", "Over time: share of women at each Games",
                    "Annotated line", "Change v Time",
                    "Share of women among all athletes at each Games, Summer and Winter. Dashed line = parity "
-                   "(50 %). Labels mark milestones. A sport clicked in Q4.2 is added as a dotted line.",
+                   "(50 %). Labels mark milestones. A sport clicked on the timeline is added as a dotted line.",
                    height=420),
         dbc.Row([
-            dbc.Col(chart_card("ge-timeline", "Q4.2", "When did each sport open to women, and how balanced is it now?",
+            dbc.Col(chart_card("ge-timeline", "Across sports: when each sport opened to women",
                                "Timeline (Priestley)", "Change v Time",
                                "Each row is a sport, from its first to its latest Games: gray = men only, violet = "
                                "women also compete. The dot marks the first Games with women; the number is the "
-                               "share of women at the latest Games. Click a sport to follow it in Q4.1.",
+                               "share of women at the latest Games. Click a sport to follow it on the share line.",
                                height=None), lg=7),
-            dbc.Col(chart_card("ge-spine", "Q4.3", "Which countries send balanced teams?",
+            dbc.Col(chart_card("ge-spine", "Across countries: women and men per team",
                                "Spine chart", "Deviation",
                                "Each row is one country's athletes: women extend left from the centre line, men "
                                "right. A balanced team reaches the dashed 50 % mark on both sides. 25 largest "
@@ -77,7 +77,7 @@ def layout():
     ])
 
 
-# ====================================================================== Q4.1 share line
+# ====================================================================== share line (over time)
 def share_by_games(f: dict, sport: str | None = None) -> pd.DataFrame:
     a = da.filter_athletes(f, ignore=IGNORE)
     if sport:
@@ -130,7 +130,7 @@ def fig_share(f: dict, sport: str | None = None) -> go.Figure:
     return fig
 
 
-# ====================================================================== Q4.2 timeline
+# ====================================================================== timeline (across sports)
 def timeline_data(f: dict) -> pd.DataFrame:
     """One row per sport: first and latest Games, first Games with women, share of women at the latest Games."""
     a = da.filter_athletes(f, ignore=IGNORE)
@@ -238,7 +238,7 @@ def sport_from_timeline_click(click) -> str | None:
     return y.replace("<b>", "").replace("</b>", "") or None
 
 
-# ====================================================================== Q4.3 spine chart
+# ====================================================================== spine chart (across countries)
 def spine_data(f: dict) -> pd.DataFrame:
     a = da.filter_athletes(f, ignore=IGNORE)
     u = a.drop_duplicates(["athlete_id", "noc"])

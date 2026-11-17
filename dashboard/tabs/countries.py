@@ -1,4 +1,4 @@
-"""Tab 2, Countries & Medals: who wins? (Q2.1-Q2.4)
+"""Tab 2, Countries & Medals. Q1: what drives a country's Olympic success?
 
 Countries chosen in the filter panel are *highlighted* on this tab (not filtered
 out), and clicking a country in the map, scatter or host chart adds/removes it
@@ -42,28 +42,29 @@ def layout():
     heat_controls = segmented("co-heat-metric", ["count", "index"], "count",
                               {"count": "Medal count", "index": "Specialisation index"})
     return html.Div([
-        tab_intro("Who wins, and why?",
-                  "Medal geography, whether success is just size and wealth, national specialisations and home "
-                  "advantage. Countries chosen in the filters are highlighted here, not filtered out; click a "
-                  "country in any chart to add or remove it."),
-        chart_card("co-map", "Q2.1", "Where in the world are medals won?",
+        tab_intro("What drives a country's Olympic success: size, wealth, home advantage or specialisation?",
+                  "The map shows who wins; the three charts below test one possible driver each: the economy and "
+                  "population, hosting the Games, and concentrating on a few sports. Countries chosen in the "
+                  "filters are highlighted here, not filtered out; click a country in any chart to add or "
+                  "remove it.", qid="Q1"),
+        chart_card("co-map", "Medals by country",
                    "Proportional-symbol map · choropleth", "Spatial",
                    "Totals are circles (area = medals); historic teams such as the USSR keep their own circle, "
                    "drawn at their main successor. Rates switch to a shaded map (1960 on, present-day countries "
                    "only).",
                    height=500, controls=map_controls),
         dbc.Row([
-            dbc.Col(chart_card("co-scatter", "Q2.2", "Is success just a matter of size and wealth?",
+            dbc.Col(chart_card("co-scatter", "Size and wealth: medals vs GDP and population",
                                "Bubble scatter (log-log)", "Correlation",
                                "x = GDP, y = medals, bubble area = population. The dashed line is the trend: "
                                "countries above it win more medals than their economy predicts.",
                                height=560, controls=scatter_controls), lg=7),
-            dbc.Col(chart_card("co-host", "Q2.3", "Do host countries win more at their home Games?",
+            dbc.Col(chart_card("co-host", "Home advantage: hosts at home vs usual",
                                "Dumbbell", "Distribution (dot-plot)",
                                "Gray dot = the host's usual share of all medals (two Games before and after); "
                                "blue dot = its share at home. The line is the home boost.", height=600), lg=5),
         ], className="g-3 my-1"),
-        chart_card("co-heatmap", "Q2.4", "In which sports does each country specialise?",
+        chart_card("co-heatmap", "Specialisation: medals by country and sport",
                    "XY-heatmap", "Correlation",
                    "Count: darker = more medals. Specialisation index = a country's share of medals in a sport "
                    "÷ its share of all medals: blue = stronger than its overall level, red = weaker. Teams are "
@@ -71,7 +72,7 @@ def layout():
                    "and West Germany; hover a row to see which teams.",
                    height=580, controls=heat_controls),
         data_note("Medal totals follow the official medal table (team medals count once), without Art "
-                  "Competitions. Per-sport medals (Q2.4) are counted from athlete results the same way. "
+                  "Competitions. Per-sport medals (heatmap) are counted from athlete results the same way. "
                   "Population and GDP: World Bank, 1960 onwards; historic teams have no World Bank data."),
     ])
 
@@ -107,7 +108,7 @@ def _summer_if_both(f: dict) -> tuple[dict, str]:
     return f, ""
 
 
-# ====================================================================== Q2.1 map
+# ====================================================================== medal map
 GEO = dict(projection_type="natural earth", showframe=False, showcoastlines=False, showcountries=True,
            countrycolor="#ffffff", countrywidth=0.5, showland=True, landcolor="#e9e8e4",
            showocean=False, lataxis_range=[-58, 85], bgcolor="rgba(0,0,0,0)")
@@ -222,7 +223,7 @@ def fig_map(f: dict, metric: str = "total", mode: str = "range") -> go.Figure:
     return fig
 
 
-# ====================================================================== Q2.2 bubble scatter
+# ====================================================================== bubble scatter (size and wealth)
 def scatter_games_options(f: dict) -> tuple[list[dict], int | None]:
     cg = da.filter_country_games(f)
     g = cg[(cg.year >= 1960)].drop_duplicates("edition_id").sort_values(["year", "season"], ascending=False)
@@ -283,7 +284,7 @@ def fig_scatter(f: dict, edition_id: int | None) -> go.Figure:
     return fig
 
 
-# ====================================================================== Q2.4 heatmap
+# ====================================================================== heatmap (specialisation)
 def heatmap_matrix(f: dict, metric: str = "count") -> tuple[pd.DataFrame, pd.DataFrame]:
     """Returns (z, counts): rows = countries, columns = sports.
 
@@ -370,7 +371,7 @@ def fig_heatmap(f: dict, metric: str = "count") -> go.Figure:
     return fig
 
 
-# ====================================================================== Q2.3 host dumbbell
+# ====================================================================== host dumbbell (home advantage)
 def host_data(f: dict) -> tuple[pd.DataFrame, str]:
     f2, note = _summer_if_both(f)
     cg = da.table("country_games")

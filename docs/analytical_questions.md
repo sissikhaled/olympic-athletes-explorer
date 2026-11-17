@@ -2,7 +2,7 @@
 
 Phase 3 design document. It fixes **what the dashboard must answer** and **why each chart is the right form for that question**, before any code is written. Chart types follow from the questions and from the shape of the data, never the other way round (see [REQUIREMENTS.md](../REQUIREMENTS.md)). Chart forms are named and checked against the course's reference, the **Financial Times *Visual Vocabulary*** (https://ft-interactive.github.io/visual-vocabulary/). Seven of its 9 categories are used (§3a).
 
-**Status:** approved 2026-11-12; **simplified 2026-11-13** after a usability review: 21 questions became 15, charts that repeated another chart or gave little insight were removed, and the filter sidebar became a slide-in panel (§9). Questions are numbered in the order they appear on the page. Earlier review decisions are kept in §8 as a record and refer to the old numbering.
+**Status:** approved 2026-11-12; simplified 2026-11-13 (§9); **restructured 2026-11-17 around four analytical questions, one per analytical tab** (§10). The Overview tab is descriptive and has no question. Charts carry plain descriptive titles: each is evidence for its tab's question. §8 and §9 are kept as a record and use earlier numberings.
 
 ---
 
@@ -18,103 +18,79 @@ Phase 3 design document. It fixes **what the dashboard must answer** and **why e
 
 ## 2. The analytical questions
 
-Each tab owns one theme. Questions are numbered so charts, interactions and the demo script can refer to them.
+The dashboard is designed to investigate **four questions**, one per analytical tab. Each tab states its question at the top; every chart on the tab looks at one aspect of it. The Overview tab is not a question: it shows what is in the data (headline numbers, the structure of the programme, an athlete search).
 
-### Tab 1: Overview ("What is in the data?")
-| # | Question |
-|---|---|
-| Q1.1 | How big are the Games in the current selection (athletes, countries, sports, events, medals)? |
-| Q1.2 | How is the Olympic programme structured: which sports and events attract the most athletes? |
-| Q1.3 | Who is a specific athlete, and what did they achieve? (search) |
-
-### Tab 2: Countries & Medals ("Who wins, and why?")
-| # | Question |
-|---|---|
-| Q2.1 | Where in the world are medals won, and how does the map change from Games to Games? |
-| Q2.2 | Is success just a matter of size and wealth? Which countries over- or under-perform relative to population and GDP? |
-| Q2.3 | Do host countries win more at their home Games? |
-| Q2.4 | In which sports does each country specialise? |
-
-### Tab 3: Athlete Physiques ("What body does each sport select for?")
-| # | Question |
-|---|---|
-| Q3.1 | Have athletes in a sport become taller, heavier or older over the decades? |
-| Q3.2 | Where does a chosen sport sit among all Olympians in height × weight? |
-| Q3.3 | Do medallists differ physically from other competitors in the same sport? |
-
-### Tab 4: Gender Participation ("How did women enter the Games?")
-| # | Question |
-|---|---|
-| Q4.1 | How did women's share of athletes evolve in the Summer and Winter Games, and which milestones mark that change? |
-| Q4.2 | When did each sport open to women, and how balanced is it now? |
-| Q4.3 | Which countries send balanced teams, and which have large gender gaps? |
-
-### Tab 5: Sport Comparison ("Which sports are alike?")
-| # | Question |
-|---|---|
-| Q5.1 | Which sports have similar athletes, so that sports cluster into "families" of body type, age and gender mix? |
-| Q5.2 | For 2–4 chosen sports, how different are their athletes' full distributions (not only averages)? |
-
----
-
-## 3. Charts per question, and why each form
-
-Forms are chosen from the data's job (magnitude, distribution, relationship, geography, hierarchy, change). Not one of the main analytical charts is a plain bar, line or pie chart.
-
-### Tab 1: Overview
-| Q | Chart | Why this form | Data |
+| # | Tab | Question | Aspects, and the chart that shows each |
 |---|---|---|---|
-| Q1.1 | **KPI tiles** (5 numbers, change vs the previous Games where one Games is selected) | Single headline values are not a chart's job | athlete_games, country_games |
-| Q1.2 | **Treemap** (full width): Season → Sport → Event, sized by number of athlete entries; click a sport to zoom into its events | The programme is a strict hierarchy. FT recommends the treemap for hierarchical part-to-whole (and advises against the sunburst), and rectangles make sizes easier to compare | athlete_events |
-| Q1.3 | **Searchable athlete table** (name search, sortable, paged) plus an **athlete card** on row click: bio, every Games, events, medals | Searching for a named individual is a lookup task, which a table does best | athlete_games, athlete_events |
+| **Q1** | Countries & Medals | **What drives a country's Olympic success: size, wealth, home advantage or specialisation?** | *who wins*: medal map · *size and wealth*: medals vs GDP and population · *home advantage*: hosts at home vs usual · *specialisation*: medals by country and sport |
+| **Q2** | Physiques | **How do athletes' bodies differ between sports, how have they changed, and do medallists stand out?** | *change*: focus sport over the decades · *difference between sports*: focus sport among all Olympians (height × weight) · *medallists*: medallists vs the rest of the field |
+| **Q3** | Gender | **How did women gain their place at the Games, over time, across sports and across countries?** | *over time*: share of women at each Games · *across sports*: when each sport opened to women · *across countries*: women and men per team |
+| **Q4** | Sport Comparison | **Which sports select for similar athletes?** | *overall similarity*: sport similarity map · *how different in detail*: the chosen sports side by side |
 
-### Tab 2: Countries & Medals
-| Q | Chart | Why this form | Data |
+### What the data shows (checked against the data; used in the demo)
+* **Q1:** wealth explains much of the medal table but not all of it: at Tokyo 2020 Jamaica won 4.8× the medals its GDP predicts. Hosts did better at home in 28 of 29 Summer Games (median 1.7× their usual share). Countries specialise strongly: Norway wins 8× its usual share in cross-country skiing; Russia (with the USSR) 2.5× in artistic gymnastics.
+* **Q2:** sports select for very different bodies, and the gap has grown: male rowers' median height rose from 180 cm (1948) to 192 cm (2020), much faster than the all-sports line. Medallists can differ from the field: male swimming medallists are 4 cm taller (187 vs 183 cm).
+* **Q3:** women went from 1.8 % of athletes (1900) to 11 % (1960) and 48 % (2020). Sports opened at very different times (athletics 1928, football 1996, wrestling 2004, boxing 2012), and Nordic combined is still men only. China is the only large team with more women than men over its history (55 %).
+* **Q4:** two axes capture 75 % of the differences between sports (body size, then age). Sports form families: basketball sits with water polo, baseball and rugby; gymnastics and artistic swimming sit at the opposite end.
+
+## 3. Charts, and why each form
+
+Each table lists a tab's charts by their card title. Forms are chosen from the data's job (magnitude, distribution, relationship, geography, hierarchy, change). Not one of the main analytical charts is a plain bar, line or pie chart.
+
+### Overview (descriptive)
+| Card | Chart | Why this form | Data |
 |---|---|---|---|
-| Q2.1 | **World map, two encodings by metric**: medal **totals → proportional-symbol map** (circle size = medals); **rates** (per million people / per $100bn GDP) **→ choropleth**. Default: totals over the filter's year range; a toggle switches to one Games at a time with a slider and ▶ play control. Historic teams keep their own circle (D15) | Geography is the point of the question. FT rule: choropleths show rates, totals belong on proportional symbols (shading big countries by raw totals exaggerates them by land area) | country_games |
-| Q2.2 | **Bubble scatter**: x = GDP (log), y = medals (log), size = population, one bubble per country for the chosen Games; dashed trend line | Relationship between two continuous variables over orders of magnitude needs a log-log scatter. Distance from the trend line *is* over/under-performance | country_games (1960+) |
-| Q2.3 | **Dumbbell**: each host nation's medal share at its home Games vs its average share in the neighbouring Games (±2), with a one-line summary | Before → after comparison per item is the canonical dumbbell job | country_games.is_host |
-| Q2.4 | **Heatmap**: countries (rows) × sports (columns). Toggle: medal count ↔ **specialisation index** (country's share of medals in a sport ÷ its share of all medals; >1 = specialised). **Historic teams are combined with their successor** (USSR, Unified Team, ROC → Russia; East/West Germany, Saar → Germany; …), marked * | Two categorical dimensions with a magnitude per cell. The index removes the "big countries win everything" effect. A specialisation is a long-run trait of a sporting nation, so splitting it across flags would hide it | medals_by_sport + `da.lineage()` |
+| The Games in the current selection | **KPI tiles** (5 numbers, change vs the previous Games where one Games is selected) | Single headline values are not a chart's job | athlete_games, country_games |
+| Sports and events by number of athletes | **Treemap** (full width): Season → Sport → Event, sized by number of athlete entries; click a sport to zoom into its events. Each sport sits under its own season: figure skating (1908, 1920) and ice hockey (1920) were held at Summer Games before the Winter Games began, but are shown under Winter, with the early entries noted on hover | The programme is a strict hierarchy. FT recommends the treemap for hierarchical part-to-whole (and advises against the sunburst), and rectangles make sizes easier to compare | athlete_events |
+| Athlete search | **Searchable athlete table** (name search, sortable, paged) plus an **athlete card** on row click: bio, every Games, events, medals | Searching for a named individual is a lookup task, which a table does best | athlete_games, athlete_events |
 
-### Tab 3: Athlete Physiques
+### Countries & Medals (Q1)
+| Card | Chart | Why this form | Data |
+|---|---|---|---|
+| Medals by country | **World map, two encodings by metric**: medal **totals → proportional-symbol map** (circle size = medals); **rates** (per million people / per $100bn GDP) **→ choropleth**. Default: totals over the filter's year range; a toggle switches to one Games at a time with a slider and ▶ play control. Historic teams keep their own circle (D15) | Geography is the point of the question. FT rule: choropleths show rates, totals belong on proportional symbols (shading big countries by raw totals exaggerates them by land area) | country_games |
+| Size and wealth | **Bubble scatter**: x = GDP (log), y = medals (log), size = population, one bubble per country for the chosen Games; dashed trend line | Relationship between two continuous variables over orders of magnitude needs a log-log scatter. Distance from the trend line *is* over/under-performance | country_games (1960+) |
+| Home advantage | **Dumbbell**: each host nation's medal share at its home Games vs its average share in the neighbouring Games (±2), with a one-line summary | Before → after comparison per item is the canonical dumbbell job | country_games.is_host |
+| Specialisation | **Heatmap**: countries (rows) × sports (columns). Toggle: medal count ↔ **specialisation index** (country's share of medals in a sport ÷ its share of all medals; >1 = specialised). **Historic teams are combined with their successor** (USSR, Unified Team, ROC → Russia; East/West Germany, Saar → Germany; …), marked * | Two categorical dimensions with a magnitude per cell. The index removes the "big countries win everything" effect. A specialisation is a long-run trait of a sporting nation, so splitting it across flags would hide it | medals_by_sport + `da.lineage()` |
+
+### Physiques (Q2)
 One measure switch (Height / Weight / BMI / Age) and one **focus sport** menu drive all three charts.
 
-| Q | Chart | Why this form | Data |
+| Card | Chart | Why this form | Data |
 |---|---|---|---|
-| Q3.1 | **Trend with uncertainty band** (full width): median (line) and interquartile range (band) per Games for the focus sport, women and men; dashed = all sports of the same season; sample size *n* on hover | Change over time with spread. The band shows whether shifts exceed the normal variation; *n* exposes thin early data (D11) | athlete_games |
-| Q3.2 | **2D density contour** of height × weight for all athletes (gray), with the focus sport's athletes overlaid as points | 100k+ points overplot; a density shows where athletes concentrate, and the overlay places one sport inside the whole | athlete_games |
-| Q3.3 | **Split violin**: medallists vs non-medallists in the focus sport | Two distributions compared head-to-head; a split violin puts them back-to-back on one axis | athlete_games |
+| Focus sport over the decades | **Trend with uncertainty band** (full width): median (line) and interquartile range (band) per Games for the focus sport, women and men; dashed = all sports of the same season; sample size *n* on hover | Change over time with spread. The band shows whether shifts exceed the normal variation; *n* exposes thin early data (D11) | athlete_games |
+| Focus sport among all Olympians | **2D density contour** of height × weight for all athletes (gray), with the focus sport's athletes overlaid as points | 100k+ points overplot; a density shows where athletes concentrate, and the overlay places one sport inside the whole | athlete_games |
+| Medallists vs the rest | **Split violin**: medallists vs non-medallists in the focus sport | Two distributions compared head-to-head; a split violin puts them back-to-back on one axis | athlete_games |
 
-### Tab 4: Gender Participation
-| Q | Chart | Why this form | Data |
+### Gender (Q3)
+| Card | Chart | Why this form | Data |
 |---|---|---|---|
-| Q4.1 | **Line of women's share (%)** per Games, Summer and Winter, with **annotated milestones** and a 50 % parity reference line; a followed sport is added as a dotted line | One measure over time; annotations turn it into an explanation | participation |
-| Q4.2 | **Priestley timeline**: one row per sport still on the programme, from its first to its latest Games; gray = men only, violet = women also compete; a dot marks the first Games with women; the share of women at the latest Games is written at the end of the row ("men only" / "women only" in words) | The question is *when* something started and how long it has lasted, which is what a timeline of bars shows. Writing the current share as text avoids the problem of the former sport × decade heatmap, where all-men and all-women decades were solid colour blocks that said little | athlete_games |
-| Q4.3 | **Spine chart per country**: each delegation as one bar split into women (left, violet) and men (right, aqua) around a 50 % parity line; top 25 delegations, sorted by imbalance | FT *Deviation*: the spine chart is listed for exactly this "split one value into Male/Female" case. Distance from the centre line *is* the gender gap | athlete_games |
+| Over time | **Line of women's share (%)** per Games, Summer and Winter, with **annotated milestones** and a 50 % parity reference line; a followed sport is added as a dotted line | One measure over time; annotations turn it into an explanation | participation |
+| Across sports | **Priestley timeline**: one row per sport still on the programme, from its first to its latest Games; gray = men only, violet = women also compete; a dot marks the first Games with women; the share of women at the latest Games is written at the end of the row ("men only" / "women only" in words) | The question is *when* something started and how long it has lasted, which is what a timeline of bars shows. Writing the current share as text avoids the problem of the former sport × decade heatmap, where all-men and all-women decades were solid colour blocks that said little | athlete_games |
+| Across countries | **Spine chart per country**: each delegation as one bar split into women (left, violet) and men (right, aqua) around a 50 % parity line; top 25 delegations, sorted by imbalance | FT *Deviation*: the spine chart is listed for exactly this "split one value into Male/Female" case. Distance from the centre line *is* the gender gap | athlete_games |
 
-### Tab 5: Sport Comparison
-| Q | Chart | Why this form | Data |
+### Sport Comparison (Q4)
+| Card | Chart | Why this form | Data |
 |---|---|---|---|
-| Q5.1 | **Sport similarity map**: PCA of the standardised sport profiles (mean height, weight, BMI, age, % female). Each sport is a point sized by athlete count, shaped by season, gray unless selected; axis loadings shown | Many variables per item reduced to 2D so that *distance = similarity*. Clusters emerge visually (power sports, endurance, small-and-light, tall team sports) | sport_profiles (recomputed for the filter) |
-| Q5.2 | **Overlaid distributions** (small multiples: height, weight, age): one translucent violin per selected sport, median marked | Averages hide the overlap. The distributions show how distinct the sports really are | athlete_games |
+| Sport similarity map | **Sport similarity map**: PCA of the standardised sport profiles (mean height, weight, BMI, age, % female). Each sport is a point sized by athlete count, shaped by season, gray unless selected; axis loadings shown | Many variables per item reduced to 2D so that *distance = similarity*. Clusters emerge visually (power sports, endurance, small-and-light, tall team sports) | sport_profiles (recomputed for the filter) |
+| The chosen sports side by side | **Overlaid distributions** (small multiples: height, weight, age): one translucent violin per selected sport, median marked | Averages hide the overlap. The distributions show how distinct the sports really are | athlete_games |
 
-**Chart-type inventory:** KPI tiles, treemap, table, proportional-symbol map, choropleth, bubble scatter (log-log), heatmap, dumbbell, trend band (fan), 2D density, split violin, annotated line, Priestley timeline, spine chart, PCA scatter, overlaid violins. That is 16 forms for 15 questions.
+**Chart-type inventory:** KPI tiles, treemap, table, proportional-symbol map, choropleth, bubble scatter (log-log), heatmap, dumbbell, trend band (fan), 2D density, split violin, annotated line, Priestley timeline, spine chart, PCA scatter, overlaid violins. That is 16 forms: 13 serve the four analytical questions, 3 describe the data (Overview).
 
 
 ### 3a. Coverage of the FT Visual Vocabulary
 
 The FT chart names are in *italics*.
 
-| FT category | FT definition (short) | Our chart(s) | Question |
+| FT category | FT definition (short) | Our chart(s) | Tab question |
 |---|---|---|---|
-| **Deviation** | variation (+/−) from a reference point | *spine chart*: women vs men around 50 % parity; diverging specialisation index | Q4.3, Q2.4 |
-| **Correlation** | relationship between two or more variables | *bubble*: medals vs GDP vs population; *XY-heatmap*: country × sport; *scatterplot*: PCA similarity map; height × weight density | Q2.2, Q2.4, Q5.1, Q3.2 |
-| **Change v Time** | changing trends | *line* with annotations; *fan*: median + IQR band over time; *Priestley timeline* | Q4.1, Q3.1, Q4.2 |
-| **Distribution** | values and how often they occur | *violin* (split and overlaid), *dot-plot* (dumbbell) | Q3.3, Q5.2, Q2.3 |
-| **Part to whole** | an entity broken into components | *treemap* (Season → Sport → Event) | Q1.2 |
-| **Magnitude** | size comparisons | *proportional symbols*; KPI tiles | Q2.1, Q1.1 |
-| **Spatial** | geographical patterns | *proportional-symbol* map (totals); *basic choropleth* (rates) | Q2.1 |
-| Ranking | position in an ordered list | not a chart of its own any more: only ordered rows (spine chart by imbalance, heatmap by medal total) | (Q4.3, Q2.4) |
+| **Deviation** | variation (+/−) from a reference point | *spine chart*: women vs men around 50 % parity; diverging specialisation index | Q3, Q1 |
+| **Correlation** | relationship between two or more variables | *bubble*: medals vs GDP vs population; *XY-heatmap*: country × sport; *scatterplot*: PCA similarity map; height × weight density | Q1, Q4, Q2 |
+| **Change v Time** | changing trends | *line* with annotations; *fan*: median + IQR band over time; *Priestley timeline* | Q3, Q2 |
+| **Distribution** | values and how often they occur | *violin* (split and overlaid), *dot-plot* (dumbbell) | Q2, Q4, Q1 |
+| **Part to whole** | an entity broken into components | *treemap* (Season → Sport → Event) | Overview |
+| **Magnitude** | size comparisons | *proportional symbols*; KPI tiles | Q1, Overview |
+| **Spatial** | geographical patterns | *proportional-symbol* map (totals); *basic choropleth* (rates) | Q1 |
+| Ranking | position in an ordered list | not a chart of its own any more: only ordered rows (spine chart by imbalance, heatmap by medal total) | (Q3, Q1) |
 | Flow | volumes moving between states | **not covered** since the Sankey was removed (2026-11-13) | — |
 
 ---
@@ -173,7 +149,7 @@ On the Countries tab, selected countries are *highlighted* rather than filtered 
 │ Showing: 1896–2022 · Summer and Winter · Women and men                    │
 │ [Overview] [Countries] [Physiques] [Gender] [Sports]                      │
 ├───────────────────────────────────────────────────────────────────────────┤
-│  Question line, e.g. "Q2.2 Is success just a matter of size and wealth?"  │
+│  [Q1] What drives a country's Olympic success: size, wealth, …?          │
 │  ┌──────────────────────────────────────────────────────────────────────┐ │
 │  │  main chart (full width)                                             │ │
 │  └──────────────────────────────────────────────────────────────────────┘ │
@@ -185,7 +161,8 @@ On the Countries tab, selected countries are *highlighted* rather than filtered 
           (⏷) opens a filter panel that slides in over the right edge
 ```
 
-* Each chart card carries its question number and a one-line "how to read" hint.
+* Each analytical tab opens with its question (Q1–Q4) and one sentence on how its charts answer it.
+* Each chart card carries a plain descriptive title, its chart type and FT category, and a one-line "how to read" hint.
 * The footer on every tab cites the sources (Olympedia via Kaggle, World Bank).
 * An **About** modal holds the data sources, licenses and a summary of the cleaning decisions.
 
@@ -215,7 +192,7 @@ Colors that are hard to read on white (yellow, aqua) are always paired with visi
 * No pie or sunburst charts: shares are shown with a treemap, a spine chart or written percentages.
 * No dual-axis charts.
 * No country-color legend with 200 colors: countries are gray unless selected.
-* No prediction or modelling beyond the descriptive PCA and the trend line in Q2.2.
+* No prediction or modelling beyond the descriptive PCA and the trend line on the size-and-wealth scatter.
 * No chart that repeats another chart's answer (see §9).
 
 ---
@@ -251,7 +228,7 @@ Colors that are hard to read on white (yellow, aqua) are always paired with visi
 
 ---
 
-## 9. Simplification (2026-11-13)
+## 9. Simplification (2026-11-13, Phase 8 numbering)
 A review of the finished dashboard found it crowded: some charts repeated another chart's answer, some were hard to read, and the filter sidebar took a fixed column of the screen. Decisions:
 
 | Change | Reason |
@@ -267,3 +244,15 @@ A review of the finished dashboard found it crowded: some charts repeated anothe
 | Removed **population pyramid** (old Q4.4) | The age difference between women and men is small and gave no extra insight |
 | Removed **radar** (old Q5.2) | It repeated the similarity map (same five measures); the violins show the real distributions |
 | Map ignores the mouse wheel | The wider map captured page scrolling; zoom stays available in its toolbar |
+
+---
+
+## 10. Four analytical questions (2026-11-17)
+Fifteen numbered questions made every chart look like its own analysis, including charts that only show the data (the headline numbers, the treemap, the athlete search). For the defense, the dashboard has to show how its visualisations and interactions support the investigation of a few clear questions.
+
+| Change | Reason |
+|---|---|
+| One question per analytical tab (Q1–Q4), stated in the tab header | Each tab tells one story; its charts are the evidence for different aspects of it (§2) |
+| Overview has no question | KPI tiles, the programme treemap and the athlete search describe the data and are self-explanatory |
+| Chart cards get plain titles instead of questions | The title says what is shown ("Home advantage: hosts at home vs usual"); the question lives once, at the top |
+| Treemap groups each sport under its own season | Figure skating (1908, 1920) and ice hockey (1920) appeared under Summer because they were held at Summer Games before 1924. They are Winter sports, so they now sit under Winter; the hover notes the early Summer entries, and no entries are dropped |
