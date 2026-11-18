@@ -55,8 +55,8 @@ and the review that trimmed the first 21-chart design): [docs/analytical_questio
   (Olympic rings, medal, runner, ♀♂, ball); hover one for its name, and a highlight slides to the active one.
   On a phone the bar floats at the bottom. The title scrolls away with the page, so the charts get almost the
   whole screen.
-* **Filters** (years, season, sex, sports, countries): press **Filters** at the top right; the panel grows out
-  of the button and collapses back into it. Filters apply to every tab; a badge on the button counts the active
+* **Filters** (years, season, sex, sports, countries): press **Filters** at the top right; the panel opens
+  just below it, leaving the icons visible, and closes with × or a second click. Filters apply to every tab; a badge on the button counts the active
   ones, and the **Showing:** bar at the top of the page lists them. A tab where a filter does not apply says so
   under its question.
 * **Linked views:** click a country in any Countries chart to select it everywhere; click a sport in the treemap

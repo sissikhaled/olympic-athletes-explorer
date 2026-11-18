@@ -55,14 +55,15 @@ body {
   border-radius: 10px; background: #eb6834; color: #fff; font-size: 11.5px; font-weight: 700;
   line-height: 20px; text-align: center; border: 2px solid var(--page);
 }
-/* while the panel is open the button is "inside" it */
-.filter-panel.open + .filter-fab { opacity: 0; transform: scale(0.6); pointer-events: none; }
+/* while the panel is open the button stays in place, highlighted; clicking it again closes the panel */
+.filter-panel.open + .filter-fab { color: var(--accent); background: rgba(227, 238, 251, 0.92); }
 
 .filter-panel {
-  position: fixed; top: 12px; right: 16px; z-index: 1050;
-  width: 320px; max-width: calc(100vw - 32px); max-height: calc(100vh - 24px); overflow-y: auto;
+  /* opens just below the icon bar and the Filters button (top 12 px + 52 px high + 8 px gap) */
+  position: fixed; top: 72px; right: 16px; z-index: 1050;
+  width: 320px; max-width: calc(100vw - 32px); max-height: calc(100vh - 88px); overflow-y: auto;
   padding: 14px 18px 18px; border-radius: 22px;
-  /* closed = shrunk into the button's corner */
+  /* closed = shrunk up into the corner under the Filters button */
   transform-origin: top right; transform: scale(0.18); opacity: 0; visibility: hidden;
   transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease, visibility 0s linear 0.38s;
 }

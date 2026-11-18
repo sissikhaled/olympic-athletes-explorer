@@ -51,7 +51,8 @@ def filter_button() -> html.Button:
 
 
 def filter_panel() -> html.Div:
-    """Glass panel that grows out of the filter button (top right) and collapses back into it.
+    """Glass panel that grows down from under the Filters button (top right), below the icon bar,
+    and collapses back up into it.
     It is hidden with CSS rather than removed, so the filter components stay mounted and the
     charts keep updating while it is closed."""
     f = da.DEFAULT_FILTERS

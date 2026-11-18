@@ -99,7 +99,7 @@ The FT chart names are in *italics*.
 ## 4. Interactions
 
 ### 4.1 Global filters (panel behind the Filters button)
-The filters live in a panel that grows out of the **Filters** button (top right, always visible) and collapses back into it with ×. The charts update while it is open, and the filters stay applied when it is closed. A badge on the button counts the active filters, and the **Showing:** bar at the top of the page always lists them; each tab's exceptions are stated once, under its question.
+The filters live in a panel that grows down from under the **Filters** button (top right, always visible), below the icon bar so every icon stays visible, and collapses back up with × or a second click on the button. The charts update while it is open, and the filters stay applied when it is closed. A badge on the button counts the active filters, and the **Showing:** bar at the top of the page always lists them; each tab's exceptions are stated once, under its question.
 
 | Control | Type | Default |
 |---|---|---|
@@ -162,7 +162,7 @@ On the Countries tab, selected countries are *highlighted* rather than filtered 
 
 * Each analytical question is a heading (Countries & Medals has two: Q1, and Q2 further down). A line under it appears only for a rule the reader must know (ⓘ): selected countries are highlighted, not filtered (Countries); the Sex filter does not apply (Gender); the Sports filter does not apply (Sports).
 * The tabs are icons in a translucent bar floating at the top right, just left of (and separate from) the Filters button (Olympic rings, medal, runner, ♀♂, ball); the name appears under an icon on hover and a highlight slides to the active one. On phones the bar floats at the bottom. The title scrolls away with the page.
-* The **Filters** button floats at the top right in the same glass style. The filter panel grows out of it and collapses back into it; its controls use the same pill style (light-blue / white active pill).
+* The **Filters** button floats at the top right in the same glass style. The filter panel grows down from under it (below the icon bar) and collapses back up; its controls use the same pill style (light-blue / white active pill).
 * Each chart card carries a plain descriptive title, its chart type and FT category, and a one-line "how to read" hint.
 * The footer on every tab cites the sources (Olympedia via Kaggle, World Bank).
 * An **About** modal holds the data sources, licenses and a summary of the cleaning decisions.
@@ -290,3 +290,4 @@ Fifteen numbered questions made every chart look like its own analysis, includin
 | Filter controls restyled to match (pill tracks, rounded dropdowns, pill buttons) | Consistent with the icon bar |
 | Tab captions removed; only rules the reader must know remain, with ⓘ (selected countries highlighted; Sex / Sports filter does not apply). The filter bar no longer repeats them | Less reading; each rule is said once, where it applies |
 | Icon bar moved to the top right, just left of the Filters button and separate from it (2026-11-18) | All controls sit together in one corner; the rest of the top edge stays free |
+| The filter panel opens below the icon bar instead of over it; the Filters button stays visible and highlighted while it is open | The panel covered most of the icons |
