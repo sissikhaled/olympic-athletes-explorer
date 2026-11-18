@@ -14,7 +14,7 @@ from dashboard.tabs import countries as co, gender as ge, overview as ov, physiq
 
 COLORS = sp.compare_colors(sp.DEFAULT_COMPARE)
 TABS = {
-    "Overview": lambda f: [ov.update_kpis(f), ov.update_treemap(f), ov.update_athlete_table(f, None)],
+    "Overview": lambda f: [ov.update_treemap(f), ov.update_athlete_table(f, None)],
     "Countries": lambda f: [co.update_map(f, "total", "range"),
                             co.update_scatter(f, co.scatter_games_options(f)[1]), co.update_heatmap(f, "count"),
                             co.update_host(f)],

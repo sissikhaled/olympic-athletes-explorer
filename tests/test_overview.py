@@ -16,17 +16,16 @@ F = da.DEFAULT_FILTERS
 RIO = {**F, "years": [2016, 2016], "season": "Summer"}
 
 
-def test_kpis_match_official_rio_2016():
-    v = ov.kpi_values(RIO)
-    assert v["events"] == 306            # official number of medal events at Rio 2016
-    assert v["countries"] == 207         # 205 NOCs + Refugee team + Independent athletes
-    assert v["editions"] == 1
+def test_filters_match_official_rio_2016():
+    """Known facts: 306 medal events and 207 teams (205 NOCs + Refugee team + Independent athletes)."""
+    assert da.filter_events(RIO).result_id.nunique() == 306
+    assert da.filter_athletes(RIO).noc.nunique() == 207
 
 
-def test_previous_games_is_same_season():
-    prev, label = ov.previous_games_filters(RIO)
-    assert prev["years"] == [2012, 2012] and prev["season"] == "Summer" and label == "2012 Summer"
-    assert ov.previous_games_filters(F) is None          # many Games selected -> no comparison
+def test_overview_is_visuals_only():
+    import json
+    text = json.dumps(ov.layout().to_plotly_json(), default=str)
+    assert "kpi" not in text and "How to read" not in text and "tab-intro" not in text
 
 
 def test_treemap_hierarchy_is_consistent():

@@ -49,7 +49,6 @@ def builders(f):
     focus = _first_focus(f)
     eds = co.scatter_games_options(f)[1]
     colors = sp.compare_colors([s for s in sp.DEFAULT_COMPARE])
-    yield "ov.kpis", lambda: ov.kpi_values(f)
     yield "ov.treemap", lambda: ov.fig_treemap(f)
     yield "ov.search", lambda: ov.search_athletes(f, "a")
     yield "ov.search_sport", lambda: ov.search_athletes(f, None, sport="Swimming")

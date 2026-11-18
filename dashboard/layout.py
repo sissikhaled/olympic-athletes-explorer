@@ -13,7 +13,7 @@ TABS = [overview, countries, physiques, gender, sports]
 NAV = [(overview.TAB_ID, "Overview", "rings"), (countries.TAB_ID, "Countries", "medal"),
        (physiques.TAB_ID, "Physiques", "runner"), (gender.TAB_ID, "Gender", "gender"),
        (sports.TAB_ID, "Sports", "ball")]
-NAV_ITEM_H = 74          # px; keep in sync with .nav-btn height in assets/style.css
+NAV_ITEM_H = 56          # px; keep in sync with --nav-h in assets/style.css
 
 
 def nav_rail() -> html.Nav:
@@ -29,7 +29,7 @@ def nav_rail() -> html.Nav:
             className="nav-btn active" if tab_id == overview.TAB_ID else "nav-btn")
         for tab_id, label, icon in NAV
     ]
-    return html.Nav([html.Div(id="nav-indicator", className="nav-indicator"), *buttons],
+    return html.Nav([html.Div(id="nav-indicator", className="nav-indicator"), *buttons],   # floats on the left
                     className="nav-rail", **{"aria-label": "Dashboard sections"})
 
 

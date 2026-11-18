@@ -9,8 +9,8 @@
   --text-muted: #8a8984;
   --accent: #2a78d6;
   --sidebar-w: 300px;
-  --rail-w: 84px;
-  --nav-h: 74px;          /* keep in sync with NAV_ITEM_H in dashboard/layout.py */
+  --rail-w: 74px;
+  --nav-h: 56px;          /* keep in sync with NAV_ITEM_H in dashboard/layout.py */
 }
 
 body {
@@ -23,14 +23,13 @@ body {
 /* ---------- header ---------- */
 .app-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 20px; background: var(--surface); border-bottom: 1px solid var(--card-border);
-  position: sticky; top: 0; z-index: 20;
+  padding: 10px 24px 0 calc(var(--rail-w) + 24px); background: transparent;   /* scrolls away, no bar */
 }
-.app-title { font-size: 18px; font-weight: 700; margin-right: 12px; }
+.app-title { font-size: 16px; font-weight: 700; margin-right: 10px; }
 .app-sub { color: var(--text-secondary); font-size: 13px; }
 
 /* ---------- content (full width) + slide-in filter panel ---------- */
-.content { max-width: 1500px; margin: 0 auto; padding: 16px 24px 96px calc(var(--rail-w) + 24px); }
+.content { max-width: 1560px; margin: 0 auto; padding: 8px 24px 96px calc(var(--rail-w) + 24px); }
 
 .filter-panel {
   position: fixed; top: 0; right: 0; z-index: 1050;
@@ -79,40 +78,47 @@ body {
 .segmented .form-check:last-child .btn { border-radius: 0 6px 6px 0; }
 .segmented .btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-/* ---------- left icon rail (replaces the tab header) ---------- */
+/* ---------- floating icon rail (replaces the tab header) ---------- */
 .main-tabs { display: none !important; }          /* dbc.Tabs header: the rail drives it */
+/* a small translucent pill that floats over the page on the left, vertically centred */
 .nav-rail {
-  position: fixed; left: 0; top: 57px; bottom: 0; z-index: 30; width: var(--rail-w);
-  padding: 12px 0; background: var(--surface); border-right: 1px solid var(--card-border);
+  position: fixed; left: 14px; top: 50%; transform: translateY(-50%); z-index: 30;
+  width: 60px; padding: 8px 0; border-radius: 22px;
+  background: rgba(252, 252, 251, 0.72);
+  backdrop-filter: blur(12px) saturate(1.4); -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.03);
   display: flex; flex-direction: column;
 }
 .nav-btn {
   position: relative; z-index: 1; height: var(--nav-h); width: 100%;
   border: 0; background: none; padding: 0; color: var(--text-secondary);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+  display: flex; align-items: center; justify-content: center;
   cursor: pointer; transition: color 0.2s ease;
 }
 .nav-icon {
-  width: 28px; height: 28px; background-color: currentColor;
+  width: 26px; height: 26px; background-color: currentColor;
   mask-size: contain; mask-repeat: no-repeat; mask-position: center;
   -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.nav-label { font-size: 11px; font-weight: 600; letter-spacing: 0.01em; }
+/* the name appears as a tooltip that glides out to the right on hover / keyboard focus */
+.nav-label {
+  position: absolute; left: calc(100% + 12px); top: 50%; transform: translate(-6px, -50%);
+  padding: 4px 10px; border-radius: 8px; white-space: nowrap; pointer-events: none;
+  background: var(--text-primary); color: #fff; font-size: 12px; font-weight: 600;
+  opacity: 0; transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.nav-btn:hover .nav-label, .nav-btn:focus-visible .nav-label { opacity: 1; transform: translate(0, -50%); }
 .nav-btn:hover { color: var(--text-primary); }
-.nav-btn:hover .nav-icon { transform: translateY(-3px) scale(1.12); }
-.nav-btn:focus-visible { outline: 2px solid #9cc3f0; outline-offset: -4px; border-radius: 12px; }
+.nav-btn:hover .nav-icon { transform: translateY(-2px) scale(1.14); }
+.nav-btn:focus-visible { outline: 2px solid #9cc3f0; outline-offset: -4px; border-radius: 14px; }
 .nav-btn.active { color: var(--accent); }
 .nav-btn.active .nav-icon { animation: nav-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
-/* highlight pill that slides (with a little overshoot) to the active icon */
+/* highlight that slides (with a little overshoot) to the active icon */
 .nav-indicator {
-  position: absolute; left: 8px; right: 8px; top: 12px; height: var(--nav-h); z-index: 0;
-  border-radius: 14px; background: #eef4fc;
+  position: absolute; left: 7px; right: 7px; top: 8px; height: var(--nav-h); z-index: 0;
+  border-radius: 16px; background: #e3eefb;
   transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.nav-indicator::before {               /* accent bar on the left edge */
-  content: ""; position: absolute; left: -8px; top: 18px; bottom: 18px; width: 4px;
-  border-radius: 0 4px 4px 0; background: var(--accent);
 }
 @keyframes nav-pop {
   0% { transform: scale(0.7) rotate(-12deg); }
@@ -169,13 +175,15 @@ body {
 /* ---------- small screens ---------- */
 @media (max-width: 900px) {
   .content { padding: 12px 16px 110px; }
-  .filter-fab { right: 16px; bottom: 82px; }
-  /* the rail becomes a bottom bar on phones */
-  .nav-rail { top: auto; bottom: 0; right: 0; width: auto; height: 66px; padding: 0 4px;
-              flex-direction: row; border-right: 0; border-top: 1px solid var(--card-border); }
-  .nav-btn { height: 66px; flex: 1; }
-  .nav-indicator { display: none; }
-  .nav-btn.active { background: #eef4fc; }
+  .filter-fab { right: 16px; bottom: 84px; }
+  /* the rail becomes a floating pill at the bottom centre on phones */
+  .nav-rail { top: auto; bottom: 14px; left: 50%; transform: translateX(-50%); width: auto; padding: 0 8px;
+              flex-direction: row; }
+  .nav-btn { width: 54px; }
+  .nav-indicator, .nav-label { display: none; }
+  .nav-btn.active { background: #e3eefb; border-radius: 16px; }
+  .app-header { padding-left: 16px; }
+}
 }
 
 /* ---------- Dash 4 slider in the accent colour ---------- */

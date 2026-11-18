@@ -2,7 +2,7 @@
 
 Phase 3 design document. It fixes **what the dashboard must answer** and **why each chart is the right form for that question**, before any code is written. Chart types follow from the questions and from the shape of the data, never the other way round (see [REQUIREMENTS.md](../REQUIREMENTS.md)). Chart forms are named and checked against the course's reference, the **Financial Times *Visual Vocabulary*** (https://ft-interactive.github.io/visual-vocabulary/). Seven of its 9 categories are used (§3a).
 
-**Status:** approved 2026-11-12; simplified 2026-11-13 (§9); restructured 2026-11-17 around a few analytical questions (§10); **host advantage became its own question and the tabs moved to an animated icon rail** (§11). Five questions: one per analytical tab, two on Countries & Medals. The Overview tab is descriptive and has no question. Charts carry plain descriptive titles: each is evidence for its tab's question. §8 and §9 are kept as a record and use earlier numberings.
+**Status:** approved 2026-11-12; simplified 2026-11-13 (§9); restructured 2026-11-17 around a few analytical questions (§10); host advantage became its own question and the tabs moved to an animated icon rail (§11); **the Overview became visuals only and the icons float over the page** (§12). Five questions: one per analytical tab, two on Countries & Medals. The Overview tab is descriptive and has no question. Charts carry plain descriptive titles: each is evidence for its tab's question. §8 and §9 are kept as a record and use earlier numberings.
 
 ---
 
@@ -42,7 +42,6 @@ Each table lists a tab's charts by their card title. Forms are chosen from the d
 ### Overview (descriptive)
 | Card | Chart | Why this form | Data |
 |---|---|---|---|
-| The Games in the current selection | **KPI tiles** (5 numbers, change vs the previous Games where one Games is selected) | Single headline values are not a chart's job | athlete_games, country_games |
 | Sports and events by number of athletes | **Treemap** (full width): Season → Sport → Event, sized by number of athlete entries; click a sport to zoom into its events. Each sport sits under its own season: figure skating (1908, 1920) and ice hockey (1920) were held at Summer Games before the Winter Games began, but are shown under Winter, with the early entries noted on hover | The programme is a strict hierarchy. FT recommends the treemap for hierarchical part-to-whole (and advises against the sunburst), and rectangles make sizes easier to compare | athlete_events |
 | Athlete search | **Searchable athlete table** (name search, sortable, paged) plus an **athlete card** on row click: bio, every Games, events, medals | Searching for a named individual is a lookup task, which a table does best | athlete_games, athlete_events |
 
@@ -76,7 +75,7 @@ One measure switch (Height / Weight / BMI / Age) and one **focus sport** menu dr
 | Sport similarity map | **Sport similarity map**: PCA of the standardised sport profiles (mean height, weight, BMI, age, % female). Each sport is a point sized by athlete count, shaped by season, gray unless selected; axis loadings shown | Many variables per item reduced to 2D so that *distance = similarity*. Clusters emerge visually (power sports, endurance, small-and-light, tall team sports) | sport_profiles (recomputed for the filter) |
 | The chosen sports side by side | **Overlaid distributions** (small multiples: height, weight, age): one translucent violin per selected sport, median marked | Averages hide the overlap. The distributions show how distinct the sports really are | athlete_games |
 
-**Chart-type inventory:** KPI tiles, treemap, table, proportional-symbol map, choropleth, bubble scatter (log-log), heatmap, dumbbell, trend band (fan), 2D density, split violin, annotated line, Priestley timeline, spine chart, PCA scatter, overlaid violins. That is 16 forms: 13 serve the five analytical questions, 3 describe the data (Overview).
+**Chart-type inventory:** treemap, table, proportional-symbol map, choropleth, bubble scatter (log-log), heatmap, dumbbell, trend band (fan), 2D density, split violin, annotated line, Priestley timeline, spine chart, PCA scatter, overlaid violins. That is 15 forms: 13 serve the five analytical questions, 2 describe the data (Overview).
 
 
 ### 3a. Coverage of the FT Visual Vocabulary
@@ -90,7 +89,7 @@ The FT chart names are in *italics*.
 | **Change v Time** | changing trends | *line* with annotations; *fan*: median + IQR band over time; *Priestley timeline* | Q4, Q3 |
 | **Distribution** | values and how often they occur | *violin* (split and overlaid), *dot-plot* (dumbbell) | Q3, Q5, Q2 |
 | **Part to whole** | an entity broken into components | *treemap* (Season → Sport → Event) | Overview |
-| **Magnitude** | size comparisons | *proportional symbols*; KPI tiles | Q1, Overview |
+| **Magnitude** | size comparisons | *proportional symbols* | Q1 |
 | **Spatial** | geographical patterns | *proportional-symbol* map (totals); *basic choropleth* (rates) | Q1 |
 | Ranking | position in an ordered list | not a chart of its own any more: only ordered rows (spine chart by imbalance, heatmap by medal total) | (Q4, Q1) |
 | Flow | volumes moving between states | **not covered** since the Sankey was removed (2026-11-13) | — |
@@ -164,7 +163,7 @@ On the Countries tab, selected countries are *highlighted* rather than filtered 
 ```
 
 * Each analytical tab opens with its question (Countries & Medals has two: Q1, and Q2 further down) and one sentence on how its charts answer it.
-* The tabs are an icon rail on the left (Olympic rings, medal, runner, ♀♂, ball, each with a short label); a highlight slides to the active tab. On phones the rail becomes a bottom bar.
+* The tabs are icons floating in a small translucent pill on the left (Olympic rings, medal, runner, ♀♂, ball); the name appears on hover and a highlight slides to the active tab. On phones the pill floats at the bottom. The slim header has no bar and scrolls away with the page.
 * Each chart card carries a plain descriptive title, its chart type and FT category, and a one-line "how to read" hint.
 * The footer on every tab cites the sources (Olympedia via Kaggle, World Bank).
 * An **About** modal holds the data sources, licenses and a summary of the cleaning decisions.
@@ -270,3 +269,13 @@ Fifteen numbered questions made every chart look like its own analysis, includin
 | Tabs → **left icon rail** with sport icons and short labels (Overview ◎ rings, Countries medal, Physiques runner, Gender ♀♂, Sports ball) | Frees the top of the page; the icons make the sections recognisable at a glance |
 | Motion: the highlight slides (with a slight overshoot) to the active icon, the icon pops when chosen, icons lift on hover, and the opened tab fades up | Makes the navigation feel responsive; all motion is switched off when the system asks for reduced motion |
 | Icons are local SVG files used as CSS masks | They work offline (no icon CDN during the defense) and take the theme colour of their state |
+
+---
+
+## 12. Visuals-only Overview and floating icons (2026-11-18)
+| Change | Reason |
+|---|---|
+| Overview: removed the KPI number cards, the intro text and the "how to read" lines; the treemap is taller | The Overview should show the data, not describe it; the numbers are in the treemap and its hover |
+| Kept the athlete search (box + table, no extra text) | It is the dashboard's name search, an interaction the brief asks for; a treemap click still narrows it |
+| Icon rail → icons floating in a translucent pill, names as hover tooltips | The fixed rail and its border took a column of the screen; the pill blends into the page |
+| Header: slimmer, no bar, scrolls away with the page | More of the screen goes to the charts |
