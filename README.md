@@ -4,6 +4,10 @@ An interactive dashboard for exploring athlete-level Olympic results from **Athe
 150,588 athletes, 53 Games, 230 teams, combined with World Bank population and GDP. Built with
 **Plotly + Dash** as a university data-visualization project.
 
+![Olympic Athletes Explorer: the Overview treemap of sports and events, with the icon navigation and the open Filters panel](docs/images/dashboard-overview.webp)
+*The Overview: every sport and event sized by athlete entries (Summer in yellow, Winter in blue), with the icon
+navigation and the Filters panel open at the top right.*
+
 ## Quick start
 
 Requires Python 3.13 (other recent versions will likely work, but the pinned versions were tested on 3.13).
@@ -129,7 +133,7 @@ that empty charts explain why.
 │   ├── layout.py          header, floating icon bar, Filters button + panel, filter bar, tabs, About dialog
 │   ├── callbacks.py       filter panel → filter store, reset, summary, filter bar, badge
 │   └── tabs/              overview · countries · physiques · gender · sports
-├── docs/
+├── docs/                  (images/: README screenshot)
 │   ├── data_preparation.md      profiling findings, decisions D1–D16, step log, data dictionary
 │   └── analytical_questions.md  questions, chart choices, FT coverage, interactions, colours
 └── tests/                 pytest suite
