@@ -2,8 +2,7 @@
 
 An interactive dashboard for exploring athlete-level Olympic results from **Athens 1896 to Beijing 2022**:
 150,588 athletes, 53 Games, 230 teams, combined with World Bank population and GDP. Built with
-**Plotly + Dash** for a university data-visualization course (assignment brief: [REQUIREMENTS.md](REQUIREMENTS.md);
-how each requirement is met: [docs/requirements_checklist.md](docs/requirements_checklist.md)).
+**Plotly + Dash** as a university data-visualization project.
 
 ## Quick start
 
@@ -66,8 +65,6 @@ and the review that trimmed the first 21-chart design): [docs/analytical_questio
 * **Hover** for exact values and sample sizes, **zoom/pan** on every chart (double-click resets), **search**
   athletes by name (accents optional), **▶ play** the medal map through history.
 
-A 10-minute presentation walkthrough with verified talking points: [docs/demo_script.md](docs/demo_script.md).
-
 ## Data sources
 
 | Source | What it gives us | Link | License |
@@ -117,7 +114,7 @@ that empty charts explain why.
 ```
 ├── app.py                 entry point: python app.py
 ├── requirements.txt       pinned dependencies
-├── REQUIREMENTS.md        assignment brief (reference)
+├── LICENSE                MIT licence (code)
 ├── assets/                style.css (page styling, animations) and icons/ (navigation icons, SVG)
 ├── data/
 │   ├── raw/               downloaded data (not in git)
@@ -133,11 +130,8 @@ that empty charts explain why.
 │   ├── callbacks.py       filter panel → filter store, reset, summary, filter bar, badge
 │   └── tabs/              overview · countries · physiques · gender · sports
 ├── docs/
-│   ├── project_plan.md          phases and progress
 │   ├── data_preparation.md      profiling findings, decisions D1–D16, step log, data dictionary
-│   ├── analytical_questions.md  questions, chart choices, FT coverage, interactions, colours
-│   ├── requirements_checklist.md
-│   └── demo_script.md
+│   └── analytical_questions.md  questions, chart choices, FT coverage, interactions, colours
 └── tests/                 pytest suite
 ```
 
@@ -146,3 +140,7 @@ that empty charts explain why.
 * Population and GDP exist from 1960 and only for present-day countries; historic teams have no per-capita values.
 * Per-sport medal counts come from athlete results and can differ slightly from the official table (mixed-nation
   teams, later corrections).
+
+## License
+The code is released under the [MIT License](LICENSE). The data comes from the sources above under CC BY 4.0;
+keep their attribution when reusing the processed tables.

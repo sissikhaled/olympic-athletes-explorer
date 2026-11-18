@@ -1,6 +1,6 @@
 # Dashboard Design: Analytical Questions, Charts and Interactions
 
-Phase 3 design document. It fixes **what the dashboard must answer** and **why each chart is the right form for that question**, before any code is written. Chart types follow from the questions and from the shape of the data, never the other way round (see [REQUIREMENTS.md](../REQUIREMENTS.md)). Chart forms are named and checked against the course's reference, the **Financial Times *Visual Vocabulary*** (https://ft-interactive.github.io/visual-vocabulary/). Seven of its 9 categories are used (§3a).
+Phase 3 design document. It fixes **what the dashboard must answer** and **why each chart is the right form for that question**, before any code is written. Chart types follow from the questions and from the shape of the data, never the other way round. Chart forms are named and checked against the **Financial Times *Visual Vocabulary*** (https://ft-interactive.github.io/visual-vocabulary/). Seven of its 9 categories are used (§3a).
 
 **Status:** approved 2026-11-12; simplified 2026-11-13 (§9); restructured 2026-11-17 around a few analytical questions (§10); host advantage became its own question and the tabs moved to an animated icon rail (§11); the Overview became visuals only (§12); **the icons and the Filters button float at the top, and tab captions were cut to the essential notes** (§13). Five questions: one per analytical tab, two on Countries & Medals. The Overview tab is descriptive and has no question. Charts carry plain descriptive titles: each is evidence for its tab's question. §8 and §9 are kept as a record and use earlier numberings.
 
@@ -205,7 +205,7 @@ Colors that are hard to read on white (yellow, aqua) are always paired with visi
 | Map default | Total over the year range, plus a toggle for one-Games-at-a-time with slider and ▶ play |
 | Scope | All 5 tabs and questions Q1.1–Q5.3 kept as designed |
 | Country selection | Highlight on the Countries tab, filter on all other tabs |
-| FT Visual Vocabulary (added 2026-11-12) | Use the course's FT reference; cover all 9 categories |
+| FT Visual Vocabulary (added 2026-11-12) | Use the FT Visual Vocabulary as the chart reference; cover all 9 categories |
 | Deviation | Q4.3 dumbbell → **spine chart** |
 | Spatial | Totals → **proportional-symbol map**; rates → **choropleth** |
 | Part to whole | Sunburst → **treemap** |
@@ -249,7 +249,7 @@ A review of the finished dashboard found it crowded: some charts repeated anothe
 ---
 
 ## 10. Four analytical questions (2026-11-17)
-Fifteen numbered questions made every chart look like its own analysis, including charts that only show the data (the headline numbers, the treemap, the athlete search). For the defense, the dashboard has to show how its visualisations and interactions support the investigation of a few clear questions.
+Fifteen numbered questions made every chart look like its own analysis, including charts that only show the data (the headline numbers, the treemap, the athlete search). A dashboard reads better when it is built around a few clear questions, with each visualisation and interaction supporting one of them.
 
 | Change | Reason |
 |---|---|
@@ -267,7 +267,7 @@ Fifteen numbered questions made every chart look like its own analysis, includin
 | Q1 narrowed to size, wealth or specialisation | Hosting moved to Q2 |
 | Tabs → **left icon rail** with sport icons and short labels (Overview ◎ rings, Countries medal, Physiques runner, Gender ♀♂, Sports ball) | Frees the top of the page; the icons make the sections recognisable at a glance |
 | Motion: the highlight slides (with a slight overshoot) to the active icon, the icon pops when chosen, icons lift on hover, and the opened tab fades up | Makes the navigation feel responsive; all motion is switched off when the system asks for reduced motion |
-| Icons are local SVG files used as CSS masks | They work offline (no icon CDN during the defense) and take the theme colour of their state |
+| Icons are local SVG files used as CSS masks | They work offline (no icon CDN needed) and take the theme colour of their state |
 
 ---
 
@@ -275,7 +275,7 @@ Fifteen numbered questions made every chart look like its own analysis, includin
 | Change | Reason |
 |---|---|
 | Overview: removed the KPI number cards, the intro text and the "how to read" lines; the treemap is taller | The Overview should show the data, not describe it; the numbers are in the treemap and its hover |
-| Kept the athlete search (box + table, no extra text) | It is the dashboard's name search, an interaction the brief asks for; a treemap click still narrows it |
+| Kept the athlete search (box + table, no extra text) | It is the dashboard's name search, a key interaction; a treemap click still narrows it |
 | Icon rail → icons floating in a translucent pill, names as hover tooltips | The fixed rail and its border took a column of the screen; the pill blends into the page |
 | Header: slimmer, no bar, scrolls away with the page | More of the screen goes to the charts |
 
