@@ -43,10 +43,8 @@ def layout():
                               {"count": "Medal count", "index": "Specialisation index"})
     return html.Div([
         tab_intro("What drives a country's Olympic success: size, wealth or specialisation?",
-                  "The map shows who wins; the two charts below test one possible driver each: the economy and "
-                  "population, and concentrating on a few sports. Countries chosen in the filters are "
-                  "highlighted here, not filtered out; click a country in any chart to add or remove it.",
-                  qid="Q1"),
+                  "Countries chosen in the filters are highlighted here, not filtered out. Medal totals do not "
+                  "split by sex.", qid="Q1"),
         chart_card("co-map", "Medals by country",
                    "Proportional-symbol map · choropleth", "Spatial",
                    "Totals are circles (area = medals); historic teams such as the USSR keep their own circle, "
@@ -65,10 +63,7 @@ def layout():
                    "combined with their predecessors (marked *): Russia includes the USSR, Germany includes East "
                    "and West Germany; hover a row to see which teams.",
                    height=580, controls=heat_controls),
-        tab_intro("Do hosts win more at home?",
-                  "Each host country's share of all medals at its home Games, compared with its usual share at "
-                  "the two Games before and after. Rank-based, so one season at a time.",
-                  qid="Q2", section=True),
+        tab_intro("Do hosts win more at home?", qid="Q2", section=True),
         chart_card("co-host", "Hosts at home vs their usual share",
                    "Dumbbell", "Distribution (dot-plot)",
                    "Gray dot = the host's usual share of all medals (two Games before and after); blue dot = its "

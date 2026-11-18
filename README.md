@@ -37,12 +37,13 @@ its chart type and its category in the [FT Visual Vocabulary](https://ft-interac
 and the simplification review that removed six charts): [docs/analytical_questions.md](docs/analytical_questions.md).
 
 ### Interacting
-* **Navigation:** the tabs are icons floating on the left of the page (Olympic rings, medal, runner, ♀♂, ball);
-  hover one for its name, and a highlight slides to the active one. On a phone they float at the bottom. The
-  slim header scrolls away with the page, so the charts get almost the whole screen.
-* **Filters** (years, season, sex, sports, countries): press the round **filter button** at the bottom right to
-  open the filter panel. Filters apply to every tab; a badge on the button counts the active ones, and the
-  **Showing:** bar at the top of the page states them and any tab-specific exception.
+* **Navigation:** the tabs are icons in a translucent bar floating at the top (Olympic rings, medal, runner,
+  ♀♂, ball); hover one for its name, and a highlight slides to the active one. On a phone the bar floats at the
+  bottom. The title scrolls away with the page, so the charts get almost the whole screen.
+* **Filters** (years, season, sex, sports, countries): press **Filters** at the top right; the panel grows out
+  of the button and collapses back into it. Filters apply to every tab; a badge on the button counts the active
+  ones, and the **Showing:** bar at the top of the page lists them. A tab where a filter does not apply says so
+  under its question.
 * **Linked views:** click a country in any Countries chart to select it everywhere; click a sport in the treemap
   to list its athletes, or on the gender timeline to add it to the share line; click or lasso sports on the
   similarity map to compare them.
@@ -112,7 +113,7 @@ that empty charts explain why.
 │   ├── theme.py           validated colours, Plotly template, empty-state figure
 │   ├── data_access.py     loads tables once, applies the global filters (cached)
 │   ├── components.py      chart card, controls, data grid, per-tab callback helper
-│   ├── layout.py          header, floating icon rail, filter button + panel, filter bar, tabs, About dialog
+│   ├── layout.py          header, floating icon bar, Filters button + panel, filter bar, tabs, About dialog
 │   ├── callbacks.py       filter panel → filter store, reset, summary, filter bar, badge
 │   └── tabs/              overview · countries · physiques · gender · sports
 ├── docs/

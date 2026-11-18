@@ -47,14 +47,15 @@ def chart_card(graph_id: str, title: str, chart: str, ft_category: str,
     return dbc.Card(dbc.CardBody(body), className="chart-card")
 
 
-def tab_intro(title: str, description: str, qid: str | None = None, section: bool = False) -> html.Div:
+def tab_intro(title: str, note: str | None = None, qid: str | None = None, section: bool = False) -> html.Div:
     """Tab header. With `qid`, the title is an analytical question (Q1-Q5).
+    `note` = only a rule the reader must know (e.g. a filter that does not apply here), shown with an ⓘ.
     `section=True` starts a second question further down the same tab."""
     heading = [html.Span(qid, className="q-id q-id-lg"), title] if qid else title
-    return html.Div([
-        html.H2(heading, className="tab-title" + (" tab-question" if qid else "")),
-        html.P(description, className="tab-desc"),
-    ], className="tab-intro" + (" q-section" if section else ""))
+    children = [html.H2(heading, className="tab-title" + (" tab-question" if qid else ""))]
+    if note:
+        children.append(html.P([html.Span("ⓘ ", className="text-secondary"), note], className="tab-note"))
+    return html.Div(children, className="tab-intro" + (" q-section" if section else ""))
 
 
 def data_note(text: str) -> html.Div:

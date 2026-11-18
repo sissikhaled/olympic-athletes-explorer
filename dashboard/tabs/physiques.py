@@ -41,10 +41,7 @@ def layout():
     ], className="g-3 mb-2 align-items-center")
     return html.Div([
         tab_intro("How do athletes' bodies differ between sports, how have they changed, and do medallists "
-                  "stand out?",
-                  "Pick a measure and a focus sport; all three charts follow. The trend shows how the sport's "
-                  "athletes changed over the decades, the cloud places them among all Olympians, and the violin "
-                  "compares medallists with the rest of the field.", qid="Q3"),
+                  "stand out?", qid="Q3"),
         controls,
         chart_card("ph-trend", "Focus sport over the decades",
                    "Trend with interquartile band", "Change v Time (fan)",

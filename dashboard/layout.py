@@ -8,28 +8,25 @@ from .tabs import countries, gender, overview, physiques, sports
 
 TABS = [overview, countries, physiques, gender, sports]
 
-# Left rail: (tab id, short label, icon in assets/icons). The icons are line drawings used as
-# CSS masks, so they take the text colour and change with hover / active state.
+# Floating top bar: (tab id, short label, icon in assets/icons). The icons are line drawings used
+# as CSS masks, so they take the text colour and change with hover / active state.
 NAV = [(overview.TAB_ID, "Overview", "rings"), (countries.TAB_ID, "Countries", "medal"),
        (physiques.TAB_ID, "Physiques", "runner"), (gender.TAB_ID, "Gender", "gender"),
        (sports.TAB_ID, "Sports", "ball")]
-NAV_ITEM_H = 56          # px; keep in sync with --nav-h in assets/style.css
+NAV_ITEM_W = 54          # px; keep in sync with --nav-w in assets/style.css
 
 
 def nav_rail() -> html.Nav:
-    """Vertical icon navigation. It drives the (hidden) dbc.Tabs header through its active_tab,
+    """Icon navigation floating at the top centre. It drives the (hidden) dbc.Tabs header through its active_tab,
     so every chart callback keeps listening to the same Input("tabs", "active_tab")."""
     full = {t.TAB_ID: t.LABEL for t in TABS}
     buttons = [
-        html.Button([
-            html.Span(className="nav-icon", style={"maskImage": f"url(/assets/icons/{icon}.svg)",
-                                                   "WebkitMaskImage": f"url(/assets/icons/{icon}.svg)"}),
-            html.Span(label, className="nav-label"),
-        ], id={"type": "nav", "index": tab_id}, title=full[tab_id], n_clicks=0,
-            className="nav-btn active" if tab_id == overview.TAB_ID else "nav-btn")
-        for tab_id, label, icon in NAV
+        html.Button([icon(name), html.Span(label, className="nav-label")],
+                    id={"type": "nav", "index": tab_id}, title=full[tab_id], n_clicks=0,
+                    className="nav-btn active" if tab_id == overview.TAB_ID else "nav-btn")
+        for tab_id, label, name in NAV
     ]
-    return html.Nav([html.Div(id="nav-indicator", className="nav-indicator"), *buttons],   # floats on the left
+    return html.Nav([html.Div(id="nav-indicator", className="nav-indicator"), *buttons],   # floats at the top centre
                     className="nav-rail", **{"aria-label": "Dashboard sections"})
 
 
@@ -38,31 +35,31 @@ def _year_marks() -> dict:
     return {y: {"label": str(y)} for y in [1896, 1920, 1940, 1960, 1980, 2000, 2022]}
 
 
-FILTER_ICON = "M3 5h18l-7 8.5V19l-4 2v-7.5z"     # funnel outline (SVG path)
+def icon(name: str, cls: str = "nav-icon") -> html.Span:
+    """A line icon from assets/icons used as a CSS mask, so it takes the text colour."""
+    url = f"url(/assets/icons/{name}.svg)"
+    return html.Span(className=cls, style={"maskImage": url, "WebkitMaskImage": url})
 
 
 def filter_button() -> html.Button:
-    """Round floating button, bottom right; opens the filter panel. The badge counts active filters."""
-    return html.Button([
-        html.Img(src="data:image/svg+xml;utf8," +
-                 "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' "
-                 f"stroke-width='2' stroke-linejoin='round'><path d='{FILTER_ICON}'/></svg>",
-                 alt="", className="fab-icon"),
-        html.Span(id="filter-count", className="fab-badge"),
-    ], id="filter-open", className="filter-fab", title="Filters", **{"aria-label": "Open filters"})
+    """Floating glass button, top right, in the same style as the tab icons; the filter
+    panel grows out of it. The badge counts active filters."""
+    return html.Button([icon("filter"), html.Span("Filters", className="fab-text"),
+                        html.Span(id="filter-count", className="fab-badge")],
+                       id="filter-open", className="filter-fab", title="Filters",
+                       **{"aria-label": "Open filters"})
 
 
 def filter_panel() -> html.Div:
-    """Slide-in panel. It is hidden with CSS rather than removed, so the filter
-    components stay mounted and charts keep updating while it is closed."""
+    """Glass panel that grows out of the filter button (top right) and collapses back into it.
+    It is hidden with CSS rather than removed, so the filter components stay mounted and the
+    charts keep updating while it is closed."""
     f = da.DEFAULT_FILTERS
     return html.Div([
-        html.Div([html.Div("Filters", className="sidebar-title"),
+        html.Div([html.Div([icon("filter", "panel-icon"), "Filters"], className="sidebar-title"),
                   html.Button("×", id="filter-close", className="panel-close", title="Close",
                               **{"aria-label": "Close filters"})],
                  className="d-flex justify-content-between align-items-center"),
-        html.Div("Apply to every tab (see each tab's note for exceptions). Charts update as you change them.",
-                 className="sidebar-sub"),
 
         html.Label("Years", className="filter-label"),
         html.Div(id="flt-years-text", className="filter-value"),
@@ -86,8 +83,7 @@ def filter_panel() -> html.Div:
         dcc.Dropdown(id="flt-countries", multi=True, value=f["countries"], placeholder="All countries",
                      options=da.country_options()),
 
-        dbc.Button("Reset filters", id="flt-reset", color="secondary", outline=True, size="sm",
-                   className="mt-3 w-100"),
+        html.Button("Reset filters", id="flt-reset", className="pill-btn mt-3 w-100"),
         html.Div(id="flt-summary", className="filter-summary"),
     ], id="filter-panel", className="filter-panel")
 

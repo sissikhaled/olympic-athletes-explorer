@@ -2,7 +2,7 @@
 
 Phase 3 design document. It fixes **what the dashboard must answer** and **why each chart is the right form for that question**, before any code is written. Chart types follow from the questions and from the shape of the data, never the other way round (see [REQUIREMENTS.md](../REQUIREMENTS.md)). Chart forms are named and checked against the course's reference, the **Financial Times *Visual Vocabulary*** (https://ft-interactive.github.io/visual-vocabulary/). Seven of its 9 categories are used (§3a).
 
-**Status:** approved 2026-11-12; simplified 2026-11-13 (§9); restructured 2026-11-17 around a few analytical questions (§10); host advantage became its own question and the tabs moved to an animated icon rail (§11); **the Overview became visuals only and the icons float over the page** (§12). Five questions: one per analytical tab, two on Countries & Medals. The Overview tab is descriptive and has no question. Charts carry plain descriptive titles: each is evidence for its tab's question. §8 and §9 are kept as a record and use earlier numberings.
+**Status:** approved 2026-11-12; simplified 2026-11-13 (§9); restructured 2026-11-17 around a few analytical questions (§10); host advantage became its own question and the tabs moved to an animated icon rail (§11); the Overview became visuals only (§12); **the icons and the Filters button float at the top, and tab captions were cut to the essential notes** (§13). Five questions: one per analytical tab, two on Countries & Medals. The Overview tab is descriptive and has no question. Charts carry plain descriptive titles: each is evidence for its tab's question. §8 and §9 are kept as a record and use earlier numberings.
 
 ---
 
@@ -98,8 +98,8 @@ The FT chart names are in *italics*.
 
 ## 4. Interactions
 
-### 4.1 Global filters (slide-in panel)
-The filters live in a panel that slides in from the right when the round **filter button** (bottom right, always visible) is pressed, and closes with ×. The charts update while it is open, and the filters stay applied when it is closed. A badge on the button counts the active filters, and the **Showing:** bar above the tabs always lists them.
+### 4.1 Global filters (panel behind the Filters button)
+The filters live in a panel that grows out of the **Filters** button (top right, always visible) and collapses back into it with ×. The charts update while it is open, and the filters stay applied when it is closed. A badge on the button counts the active filters, and the **Showing:** bar at the top of the page always lists them; each tab's exceptions are stated once, under its question.
 
 | Control | Type | Default |
 |---|---|---|
@@ -144,26 +144,25 @@ On the Countries tab, selected countries are *highlighted* rather than filtered 
 ## 5. Layout
 
 ```
-┌───────────────────────────────────────────────────────────────────────────┐
-│  Olympic Athletes Explorer · 1896–2022                          [About]   │
-├──────┬────────────────────────────────────────────────────────────────────┤
-│ (◎)  │ Showing: 1896–2022 · Summer and Winter · Women and men             │
-│Overv.├────────────────────────────────────────────────────────────────────┤
-│ (🏅) │ [Q1] What drives a country's Olympic success: size, wealth, …?     │
-│Count.│                                                                    │
-│  ┌──────────────────────────────────────────────────────────────────────┐ │
-│  │  main chart (full width)                                             │ │
-│  └──────────────────────────────────────────────────────────────────────┘ │
-│  ┌──────────────────────────────────┐ ┌─────────────────────────────────┐ │
-│  │  chart (≈ 7/12)                  │ │  chart (≈ 5/12)                 │ │
-│  └──────────────────────────────────┘ └─────────────────────────────────┘ │
-│  data note · source                                                 (⏷)  │ ← round filter button
-└───────────────────────────────────────────────────────────────────────────┘
-          (⏷) opens a filter panel that slides in over the right edge
+   Olympic Athletes Explorer   ╭ ◎  🏅  🏃  ⚥  🏀 ╮                 ╭ ⏷ Filters ² ╮
+   (title scrolls away)        ╰────────────────╯                 ╰──────────────╯
+                               icon bar, floats (fixed)           floats (fixed); the
+                                                                  panel grows out of it
+   Showing: 1896–2022 · Summer and Winter · Women and men
+   [Q1] What drives a country's Olympic success: size, wealth or specialisation?
+   ⓘ Countries chosen in the filters are highlighted here, not filtered out. …
+  ┌───────────────────────────────────────────────────────────────────────────┐
+  │  main chart (full width)                                                  │
+  └───────────────────────────────────────────────────────────────────────────┘
+  ┌────────────────────────────────────┐ ┌────────────────────────────────────┐
+  │  chart                             │ │  chart                             │
+  └────────────────────────────────────┘ └────────────────────────────────────┘
+   data note · source
 ```
 
-* Each analytical tab opens with its question (Countries & Medals has two: Q1, and Q2 further down) and one sentence on how its charts answer it.
-* The tabs are icons floating in a small translucent pill on the left (Olympic rings, medal, runner, ♀♂, ball); the name appears on hover and a highlight slides to the active tab. On phones the pill floats at the bottom. The slim header has no bar and scrolls away with the page.
+* Each analytical question is a heading (Countries & Medals has two: Q1, and Q2 further down). A line under it appears only for a rule the reader must know (ⓘ): selected countries are highlighted, not filtered (Countries); the Sex filter does not apply (Gender); the Sports filter does not apply (Sports).
+* The tabs are icons in a translucent bar floating at the top centre (Olympic rings, medal, runner, ♀♂, ball); the name appears under an icon on hover and a highlight slides to the active one. On phones the bar floats at the bottom. The title scrolls away with the page.
+* The **Filters** button floats at the top right in the same glass style. The filter panel grows out of it and collapses back into it; its controls use the same pill style (light-blue / white active pill).
 * Each chart card carries a plain descriptive title, its chart type and FT category, and a one-line "how to read" hint.
 * The footer on every tab cites the sources (Olympedia via Kaggle, World Bank).
 * An **About** modal holds the data sources, licenses and a summary of the cleaning decisions.
@@ -279,3 +278,14 @@ Fifteen numbered questions made every chart look like its own analysis, includin
 | Kept the athlete search (box + table, no extra text) | It is the dashboard's name search, an interaction the brief asks for; a treemap click still narrows it |
 | Icon rail → icons floating in a translucent pill, names as hover tooltips | The fixed rail and its border took a column of the screen; the pill blends into the page |
 | Header: slimmer, no bar, scrolls away with the page | More of the screen goes to the charts |
+
+---
+
+## 13. Top bar, Filters button and captions (2026-11-18)
+| Change | Reason |
+|---|---|
+| Icons moved from the left edge to a translucent bar floating at the top centre; labels appear under the icons on hover | The left pill still took width from the charts; the top of the page is free once the title scrolls away |
+| Filters button moved to the top right, in the same glass style as the icon bar | One visual language for all controls |
+| The filter panel grows out of the button and collapses back into it | The panel's origin is obvious, and closing it returns to the same place |
+| Filter controls restyled to match (pill tracks, rounded dropdowns, pill buttons) | Consistent with the icon bar |
+| Tab captions removed; only rules the reader must know remain, with ⓘ (selected countries highlighted; Sex / Sports filter does not apply). The filter bar no longer repeats them | Less reading; each rule is said once, where it applies |

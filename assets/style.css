@@ -9,8 +9,7 @@
   --text-muted: #8a8984;
   --accent: #2a78d6;
   --sidebar-w: 300px;
-  --rail-w: 74px;
-  --nav-h: 56px;          /* keep in sync with NAV_ITEM_H in dashboard/layout.py */
+  --nav-w: 54px;          /* keep in sync with NAV_ITEM_W in dashboard/layout.py */
 }
 
 body {
@@ -20,55 +19,86 @@ body {
   font-size: 14px;
 }
 
-/* ---------- header ---------- */
+/* ---------- shared "glass" style: icon bar, filter button, filter panel ---------- */
+.nav-rail, .filter-fab, .filter-panel {
+  background: rgba(252, 252, 251, 0.74);
+  backdrop-filter: blur(14px) saturate(1.4); -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+/* ---------- header: title only; scrolls away, leaves room for the floating bars ---------- */
 .app-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 24px 0 calc(var(--rail-w) + 24px); background: transparent;   /* scrolls away, no bar */
+  display: flex; align-items: center; min-height: 76px;
+  padding: 0 24px; background: transparent;
 }
 .app-title { font-size: 16px; font-weight: 700; margin-right: 10px; }
 .app-sub { color: var(--text-secondary); font-size: 13px; }
+.app-header .btn-link { margin-left: 12px; }
 
-/* ---------- content (full width) + slide-in filter panel ---------- */
-.content { max-width: 1560px; margin: 0 auto; padding: 8px 24px 96px calc(var(--rail-w) + 24px); }
+.content { max-width: 1560px; margin: 0 auto; padding: 0 24px 64px; }
 
-.filter-panel {
-  position: fixed; top: 0; right: 0; z-index: 1050;
-  width: var(--sidebar-w); max-width: 92vw; height: 100vh; overflow-y: auto;
-  padding: 16px 18px 24px; background: var(--surface); border-left: 1px solid var(--card-border);
-  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.10);
-  transform: translateX(105%); visibility: hidden;
-  transition: transform 0.22s ease, visibility 0s linear 0.22s;
-}
-.filter-panel.open { transform: translateX(0); visibility: visible; transition: transform 0.22s ease; }
-.panel-close { border: 0; background: none; font-size: 24px; line-height: 1; color: var(--text-secondary);
-               padding: 0 4px; }
-.panel-close:hover { color: var(--text-primary); }
-
-/* round floating filter button, bottom right */
+/* ---------- filter button (top right) and the panel that grows out of it ---------- */
 .filter-fab {
-  position: fixed; right: 24px; bottom: 24px; z-index: 1040;
-  width: 56px; height: 56px; border-radius: 50%; border: 0;
-  background: var(--accent); box-shadow: 0 4px 14px rgba(42, 120, 214, 0.40);
-  display: flex; align-items: center; justify-content: center;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: fixed; top: 12px; right: 16px; z-index: 1040;
+  height: 52px; padding: 0 18px 0 14px; border-radius: 22px; border: 0;
+  display: flex; align-items: center; gap: 8px; color: var(--text-secondary);
+  transition: color 0.2s ease, opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.filter-fab:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(42, 120, 214, 0.50); }
-.filter-fab:focus-visible { outline: 3px solid #9cc3f0; outline-offset: 2px; }
-.fab-icon { width: 24px; height: 24px; }
+.filter-fab .nav-icon { width: 22px; height: 22px; }
+.fab-text { font-size: 13px; font-weight: 600; }
+.filter-fab:hover { color: var(--accent); }
+.filter-fab:hover .nav-icon { transform: translateY(-2px) scale(1.14); }
+.filter-fab:focus-visible { outline: 2px solid #9cc3f0; outline-offset: 2px; }
 .fab-badge {
-  position: absolute; top: -2px; right: -2px; min-width: 20px; height: 20px; padding: 0 5px;
+  position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px;
   border-radius: 10px; background: #eb6834; color: #fff; font-size: 11.5px; font-weight: 700;
   line-height: 20px; text-align: center; border: 2px solid var(--page);
 }
+/* while the panel is open the button is "inside" it */
+.filter-panel.open + .filter-fab { opacity: 0; transform: scale(0.6); pointer-events: none; }
 
-.sidebar-title { font-weight: 700; font-size: 15px; }
+.filter-panel {
+  position: fixed; top: 12px; right: 16px; z-index: 1050;
+  width: 320px; max-width: calc(100vw - 32px); max-height: calc(100vh - 24px); overflow-y: auto;
+  padding: 14px 18px 18px; border-radius: 22px;
+  /* closed = shrunk into the button's corner */
+  transform-origin: top right; transform: scale(0.18); opacity: 0; visibility: hidden;
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease, visibility 0s linear 0.38s;
+}
+.filter-panel.open {
+  transform: scale(1); opacity: 1; visibility: visible;
+  transition: transform 0.42s cubic-bezier(0.34, 1.4, 0.64, 1), opacity 0.18s ease;
+}
+.panel-close { border: 0; background: none; font-size: 22px; line-height: 1; color: var(--text-secondary);
+               width: 32px; height: 32px; border-radius: 12px; transition: background 0.15s ease; }
+.panel-close:hover { color: var(--text-primary); background: rgba(0, 0, 0, 0.05); }
+.panel-icon { display: inline-block; width: 18px; height: 18px; margin-right: 8px; vertical-align: -3px;
+              background-color: var(--accent); mask-size: contain; -webkit-mask-size: contain;
+              mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat; }
+
+.sidebar-title { font-weight: 700; font-size: 15px; display: flex; align-items: center; }
 .sidebar-sub { color: var(--text-muted); font-size: 12px; margin-bottom: 8px; }
 .filter-label { display: block; font-weight: 600; font-size: 13px; margin: 14px 0 4px; }
 .filter-value { color: var(--text-secondary); font-size: 12px; margin-bottom: 2px; }
 .filter-summary {
-  margin-top: 14px; padding: 10px; border-radius: 6px; background: #eef4fc;
+  margin-top: 14px; padding: 10px 12px; border-radius: 14px; background: #e3eefb;
   font-size: 12.5px; color: var(--text-secondary); line-height: 1.6;
 }
+/* controls inside the panel: pill tracks with a light-blue active pill, like the icon bar */
+.filter-panel .segmented { background: rgba(0, 0, 0, 0.045); border-radius: 14px; padding: 3px; gap: 2px;
+                           display: inline-flex; flex-wrap: nowrap; }
+.filter-panel .segmented .btn { border: 0 !important; border-radius: 11px !important; margin: 0 !important;
+                                background: none; color: var(--text-secondary); padding: 4px 12px;
+                                transition: background 0.2s ease, color 0.2s ease; }
+.filter-panel .segmented .btn:hover { color: var(--text-primary); background: rgba(255, 255, 255, 0.6); }
+.filter-panel .segmented .btn.active { background: #fff; color: var(--accent); font-weight: 600;
+                                       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08); }
+.filter-panel .dash-dropdown, .filter-panel .Select-control, .filter-panel .dash-dropdown-trigger {
+  border-radius: 14px !important; }
+.filter-panel .form-check-input:checked { background-color: var(--accent); border-color: var(--accent); }
+.pill-btn { border: 0; border-radius: 14px; padding: 7px 12px; font-size: 13px; font-weight: 600;
+            background: rgba(0, 0, 0, 0.05); color: var(--text-secondary); transition: background 0.15s ease; }
+.pill-btn:hover { background: #e3eefb; color: var(--accent); }
 
 /* segmented controls (dbc.RadioItems styled as a button group) */
 .segmented { display: flex; flex-wrap: wrap; gap: 0; }
@@ -80,17 +110,13 @@ body {
 
 /* ---------- floating icon rail (replaces the tab header) ---------- */
 .main-tabs { display: none !important; }          /* dbc.Tabs header: the rail drives it */
-/* a small translucent pill that floats over the page on the left, vertically centred */
+/* a translucent bar that floats at the top centre of the screen */
 .nav-rail {
-  position: fixed; left: 14px; top: 50%; transform: translateY(-50%); z-index: 30;
-  width: 60px; padding: 8px 0; border-radius: 22px;
-  background: rgba(252, 252, 251, 0.72);
-  backdrop-filter: blur(12px) saturate(1.4); -webkit-backdrop-filter: blur(12px) saturate(1.4);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.03);
-  display: flex; flex-direction: column;
+  position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 1040;
+  height: 52px; padding: 0 6px; border-radius: 22px; display: flex; flex-direction: row; align-items: center;
 }
 .nav-btn {
-  position: relative; z-index: 1; height: var(--nav-h); width: 100%;
+  position: relative; z-index: 1; height: 44px; width: var(--nav-w);
   border: 0; background: none; padding: 0; color: var(--text-secondary);
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; transition: color 0.2s ease;
@@ -103,12 +129,12 @@ body {
 }
 /* the name appears as a tooltip that glides out to the right on hover / keyboard focus */
 .nav-label {
-  position: absolute; left: calc(100% + 12px); top: 50%; transform: translate(-6px, -50%);
+  position: absolute; top: calc(100% + 10px); left: 50%; transform: translate(-50%, -6px);
   padding: 4px 10px; border-radius: 8px; white-space: nowrap; pointer-events: none;
   background: var(--text-primary); color: #fff; font-size: 12px; font-weight: 600;
   opacity: 0; transition: opacity 0.18s ease, transform 0.18s ease;
 }
-.nav-btn:hover .nav-label, .nav-btn:focus-visible .nav-label { opacity: 1; transform: translate(0, -50%); }
+.nav-btn:hover .nav-label, .nav-btn:focus-visible .nav-label { opacity: 1; transform: translate(-50%, 0); }
 .nav-btn:hover { color: var(--text-primary); }
 .nav-btn:hover .nav-icon { transform: translateY(-2px) scale(1.14); }
 .nav-btn:focus-visible { outline: 2px solid #9cc3f0; outline-offset: -4px; border-radius: 14px; }
@@ -116,8 +142,8 @@ body {
 .nav-btn.active .nav-icon { animation: nav-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
 /* highlight that slides (with a little overshoot) to the active icon */
 .nav-indicator {
-  position: absolute; left: 7px; right: 7px; top: 8px; height: var(--nav-h); z-index: 0;
-  border-radius: 16px; background: #e3eefb;
+  position: absolute; left: 6px; top: 4px; width: var(--nav-w); height: 44px; z-index: 0;
+  border-radius: 18px; background: #e3eefb;
   transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 @keyframes nav-pop {
@@ -129,7 +155,7 @@ body {
 .tab-content > .tab-pane.active { animation: tab-in 0.38s ease-out; }
 @keyframes tab-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
-  .nav-indicator, .nav-icon, .nav-btn { transition: none; }
+  .nav-indicator, .nav-icon, .nav-btn, .filter-panel, .filter-panel.open, .filter-fab { transition: none; }
   .nav-btn.active .nav-icon, .tab-content > .tab-pane.active { animation: none; }
 }
 
@@ -138,7 +164,7 @@ body {
 .main-tabs .nav-link.active { color: var(--text-primary); font-weight: 600; }
 .tab-intro { margin: 4px 0 14px; }
 .tab-title { font-size: 20px; font-weight: 700; margin-bottom: 2px; }
-.tab-desc { color: var(--text-secondary); max-width: 900px; margin-bottom: 0; }
+.tab-note { color: var(--text-secondary); font-size: 13px; margin-bottom: 0; }
 /* the tab's analytical question (Q1-Q4): the one thing each analytical tab answers */
 .tab-question { font-size: 19px; line-height: 1.35; max-width: 1000px; }
 .q-section { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--card-border); }
@@ -173,17 +199,16 @@ body {
 .app-footer { color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--card-border); margin-top: 20px; padding-top: 10px; }
 
 /* ---------- small screens ---------- */
+@media (max-width: 1400px) { .app-sub { display: none; } }   /* keeps the title clear of the centred icon bar */
 @media (max-width: 900px) {
-  .content { padding: 12px 16px 110px; }
-  .filter-fab { right: 16px; bottom: 84px; }
-  /* the rail becomes a floating pill at the bottom centre on phones */
-  .nav-rail { top: auto; bottom: 14px; left: 50%; transform: translateX(-50%); width: auto; padding: 0 8px;
-              flex-direction: row; }
-  .nav-btn { width: 54px; }
-  .nav-indicator, .nav-label { display: none; }
-  .nav-btn.active { background: #e3eefb; border-radius: 16px; }
-  .app-header { padding-left: 16px; }
-}
+  .content { padding: 0 12px 96px; }
+  .app-header { padding: 0 16px; min-height: 64px; }
+  .app-header .btn-link { display: none; }
+  .fab-text { display: none; }
+  .filter-fab { padding: 0 14px; }
+  /* icons float as a pill at the bottom centre on phones */
+  .nav-rail { top: auto; bottom: 14px; }
+  .nav-label { display: none; }
 }
 
 /* ---------- Dash 4 slider in the accent colour ---------- */

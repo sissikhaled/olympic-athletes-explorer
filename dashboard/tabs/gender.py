@@ -46,9 +46,7 @@ def layout():
     return html.Div([
         dcc.Store(id="ge-sport"),
         tab_intro("How did women gain their place at the Games, over time, across sports and across countries?",
-                  "From the first women in 1900 (2 % of athletes) to 48 % in 2020: the overall trend, when each "
-                  "sport opened to women, and which countries send balanced teams. The Sex filter does not "
-                  "apply here, because this tab compares the sexes.", qid="Q4"),
+                  "The Sex filter does not apply here, because this tab compares the sexes.", qid="Q4"),
         html.Div([html.Span("Following sport: ", className="small text-secondary"),
                   html.Span(NO_SPORT, id="ge-sport-label", className="small fw-semibold me-2"),
                   dbc.Button("Clear", id="ge-sport-clear", size="sm", color="link", className="p-0 align-baseline")],

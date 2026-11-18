@@ -110,7 +110,10 @@ def test_filter_bar_names_filters_and_tab_exceptions():
     chips = cb.filter_chips({**da.DEFAULT_FILTERS, "season": "Winter", "sex": "Female", "countries": ["NOR", "SWE"]})
     assert chips == ["1896–2022", "Winter Games", "Women only", "2 countries"]
     bar = str(cb.show_filter_bar(da.DEFAULT_FILTERS, "gender"))
-    assert "Sex filter does not apply" in bar and "(filtered)" not in bar
+    assert "(filtered)" not in bar
+    from dashboard.tabs import gender
+    import json
+    assert "Sex filter does not apply" in json.dumps(gender.layout().to_plotly_json(), default=str)
 
 
 def test_filter_panel_is_hidden_until_the_button_is_pressed():
@@ -134,12 +137,12 @@ def test_filter_badge_counts_active_filters():
 
 def test_icon_rail_covers_every_tab_and_tracks_the_active_one():
     from dashboard import callbacks as cb
-    from dashboard.layout import NAV, NAV_ITEM_H, TABS
+    from dashboard.layout import NAV, NAV_ITEM_W, TABS
     assert [t for t, _, _ in NAV] == [t.TAB_ID for t in TABS]
     for _, _, icon in NAV:
         assert (ROOT / "assets" / "icons" / f"{icon}.svg").exists()
     classes, style = cb.nav_state("gender")
     assert classes.count("nav-btn active") == 1 and classes[3] == "nav-btn active"
-    assert style["transform"] == f"translateY({3 * NAV_ITEM_H}px)"
+    assert style["transform"] == f"translateX({3 * NAV_ITEM_W}px)"
     css = (ROOT / "assets" / "style.css").read_text()
-    assert f"--nav-h: {NAV_ITEM_H}px" in css                     # CSS and Python agree on the step
+    assert f"--nav-w: {NAV_ITEM_W}px" in css                     # CSS and Python agree on the step

@@ -49,10 +49,7 @@ def layout():
     ], className="mb-3")
     return html.Div([
         tab_intro("Which sports select for similar athletes?",
-                  "The map places every sport by the athletes it attracts (body size, age and share of women), so "
-                  "similar sports sit close together; the violins then compare the chosen sports' full "
-                  "distributions. The Sports filter does not apply here; use the picker or click sports on the "
-                  "map.", qid="Q5"),
+                  "The Sports filter does not apply here; use the picker or click sports on the map.", qid="Q5"),
         picker,
         chart_card("sp-pca", "Sport similarity map",
                    "Similarity map (PCA scatter)", "Correlation",

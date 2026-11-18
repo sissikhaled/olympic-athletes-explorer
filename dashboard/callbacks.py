@@ -2,7 +2,7 @@
 from dash import ALL, Input, Output, State, callback, ctx, html, no_update
 
 from . import data_access as da
-from .layout import NAV, NAV_ITEM_H
+from .layout import NAV, NAV_ITEM_W
 
 FILTER_INPUTS = ["flt-years", "flt-season", "flt-sex", "flt-sports", "flt-hide-minor", "flt-countries"]
 
@@ -102,7 +102,7 @@ def nav_state(active: str) -> tuple[list[str], dict]:
     ids = [t for t, _, _ in NAV]
     i = ids.index(active) if active in ids else 0
     classes = ["nav-btn active" if t == active else "nav-btn" for t in ids]
-    return classes, {"transform": f"translateY({i * NAV_ITEM_H}px)"}
+    return classes, {"transform": f"translateX({i * NAV_ITEM_W}px)"}
 
 
 @callback(Output({"type": "nav", "index": ALL}, "className"), Output("nav-indicator", "style"),
@@ -115,14 +115,6 @@ def show_active_nav(active):
           State("about-modal", "is_open"), prevent_initial_call=True)
 def toggle_about(_, is_open):
     return not is_open if ctx.triggered_id == "about-open" else is_open
-
-
-# Per-tab exceptions to the global filters (see docs/analytical_questions.md §4.1)
-TAB_EXCEPTIONS = {
-    "countries": "Selected countries are highlighted, not filtered out. Medal totals do not split by sex.",
-    "gender": "The Sex filter does not apply on this tab (it compares women and men).",
-    "sports": "The Sports filter does not apply on this tab; use the sport picker.",
-}
 
 
 def filter_chips(f: dict) -> list[str]:
@@ -146,7 +138,4 @@ def show_filter_bar(f, tab):
         parts.append(html.Span(c, className="filter-chip"))
     if f != da.DEFAULT_FILTERS:
         parts.append(html.Span("(filtered)", className="text-secondary small ms-1"))
-    note = TAB_EXCEPTIONS.get(tab)
-    if note:
-        parts.append(html.Div([html.Span("ⓘ ", className="text-secondary"), note], className="filter-note"))
-    return parts
+    return parts       # per-tab exceptions are stated once, in each tab's header (tab_intro note)
