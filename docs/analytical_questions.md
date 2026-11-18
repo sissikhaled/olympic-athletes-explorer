@@ -144,10 +144,10 @@ On the Countries tab, selected countries are *highlighted* rather than filtered 
 ## 5. Layout
 
 ```
-   Olympic Athletes Explorer   ╭ ◎  🏅  🏃  ⚥  🏀 ╮                 ╭ ⏷ Filters ² ╮
-   (title scrolls away)        ╰────────────────╯                 ╰──────────────╯
-                               icon bar, floats (fixed)           floats (fixed); the
-                                                                  panel grows out of it
+   Olympic Athletes Explorer                  ╭ ◎  🏅  🏃  ⚥  🏀 ╮  ╭ ⏷ Filters ² ╮
+   (title scrolls away)                       ╰────────────────╯  ╰──────────────╯
+                                              icon bar (fixed)    fixed; the panel
+                                                                  grows out of it
    Showing: 1896–2022 · Summer and Winter · Women and men
    [Q1] What drives a country's Olympic success: size, wealth or specialisation?
    ⓘ Countries chosen in the filters are highlighted here, not filtered out. …
@@ -161,7 +161,7 @@ On the Countries tab, selected countries are *highlighted* rather than filtered 
 ```
 
 * Each analytical question is a heading (Countries & Medals has two: Q1, and Q2 further down). A line under it appears only for a rule the reader must know (ⓘ): selected countries are highlighted, not filtered (Countries); the Sex filter does not apply (Gender); the Sports filter does not apply (Sports).
-* The tabs are icons in a translucent bar floating at the top centre (Olympic rings, medal, runner, ♀♂, ball); the name appears under an icon on hover and a highlight slides to the active one. On phones the bar floats at the bottom. The title scrolls away with the page.
+* The tabs are icons in a translucent bar floating at the top right, just left of (and separate from) the Filters button (Olympic rings, medal, runner, ♀♂, ball); the name appears under an icon on hover and a highlight slides to the active one. On phones the bar floats at the bottom. The title scrolls away with the page.
 * The **Filters** button floats at the top right in the same glass style. The filter panel grows out of it and collapses back into it; its controls use the same pill style (light-blue / white active pill).
 * Each chart card carries a plain descriptive title, its chart type and FT category, and a one-line "how to read" hint.
 * The footer on every tab cites the sources (Olympedia via Kaggle, World Bank).
@@ -289,3 +289,4 @@ Fifteen numbered questions made every chart look like its own analysis, includin
 | The filter panel grows out of the button and collapses back into it | The panel's origin is obvious, and closing it returns to the same place |
 | Filter controls restyled to match (pill tracks, rounded dropdowns, pill buttons) | Consistent with the icon bar |
 | Tab captions removed; only rules the reader must know remain, with ⓘ (selected countries highlighted; Sex / Sports filter does not apply). The filter bar no longer repeats them | Less reading; each rule is said once, where it applies |
+| Icon bar moved to the top right, just left of the Filters button and separate from it (2026-11-18) | All controls sit together in one corner; the rest of the top edge stays free |

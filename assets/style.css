@@ -10,6 +10,7 @@
   --accent: #2a78d6;
   --sidebar-w: 300px;
   --nav-w: 54px;          /* keep in sync with NAV_ITEM_W in dashboard/layout.py */
+  --fab-w: 116px;         /* Filters button width: the icon bar sits just left of it */
 }
 
 body {
@@ -40,8 +41,8 @@ body {
 /* ---------- filter button (top right) and the panel that grows out of it ---------- */
 .filter-fab {
   position: fixed; top: 12px; right: 16px; z-index: 1040;
-  height: 52px; padding: 0 18px 0 14px; border-radius: 22px; border: 0;
-  display: flex; align-items: center; gap: 8px; color: var(--text-secondary);
+  width: var(--fab-w); height: 52px; padding: 0; border-radius: 22px; border: 0;
+  display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--text-secondary);
   transition: color 0.2s ease, opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .filter-fab .nav-icon { width: 22px; height: 22px; }
@@ -110,9 +111,9 @@ body {
 
 /* ---------- floating icon rail (replaces the tab header) ---------- */
 .main-tabs { display: none !important; }          /* dbc.Tabs header: the rail drives it */
-/* a translucent bar that floats at the top centre of the screen */
+/* a translucent bar that floats at the top right, just left of the Filters button (10 px apart) */
 .nav-rail {
-  position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 1040;
+  position: fixed; top: 12px; right: calc(16px + var(--fab-w) + 10px); z-index: 1040;
   height: 52px; padding: 0 6px; border-radius: 22px; display: flex; flex-direction: row; align-items: center;
 }
 .nav-btn {
@@ -199,15 +200,15 @@ body {
 .app-footer { color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--card-border); margin-top: 20px; padding-top: 10px; }
 
 /* ---------- small screens ---------- */
-@media (max-width: 1400px) { .app-sub { display: none; } }   /* keeps the title clear of the centred icon bar */
+@media (max-width: 1000px) { .app-sub { display: none; } }   /* keeps the title clear of the icon bar */
 @media (max-width: 900px) {
   .content { padding: 0 12px 96px; }
   .app-header { padding: 0 16px; min-height: 64px; }
   .app-header .btn-link { display: none; }
   .fab-text { display: none; }
-  .filter-fab { padding: 0 14px; }
+  .filter-fab { --fab-w: 52px; }
   /* icons float as a pill at the bottom centre on phones */
-  .nav-rail { top: auto; bottom: 14px; }
+  .nav-rail { top: auto; bottom: 14px; right: auto; left: 50%; transform: translateX(-50%); }
   .nav-label { display: none; }
 }
 

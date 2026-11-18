@@ -8,7 +8,7 @@ from .tabs import countries, gender, overview, physiques, sports
 
 TABS = [overview, countries, physiques, gender, sports]
 
-# Floating top bar: (tab id, short label, icon in assets/icons). The icons are line drawings used
+# Floating top-right bar: (tab id, short label, icon in assets/icons). The icons are line drawings used
 # as CSS masks, so they take the text colour and change with hover / active state.
 NAV = [(overview.TAB_ID, "Overview", "rings"), (countries.TAB_ID, "Countries", "medal"),
        (physiques.TAB_ID, "Physiques", "runner"), (gender.TAB_ID, "Gender", "gender"),
@@ -17,7 +17,7 @@ NAV_ITEM_W = 54          # px; keep in sync with --nav-w in assets/style.css
 
 
 def nav_rail() -> html.Nav:
-    """Icon navigation floating at the top centre. It drives the (hidden) dbc.Tabs header through its active_tab,
+    """Icon navigation floating at the top right, just left of the Filters button. It drives the (hidden) dbc.Tabs header through its active_tab,
     so every chart callback keeps listening to the same Input("tabs", "active_tab")."""
     full = {t.TAB_ID: t.LABEL for t in TABS}
     buttons = [
@@ -26,7 +26,7 @@ def nav_rail() -> html.Nav:
                     className="nav-btn active" if tab_id == overview.TAB_ID else "nav-btn")
         for tab_id, label, name in NAV
     ]
-    return html.Nav([html.Div(id="nav-indicator", className="nav-indicator"), *buttons],   # floats at the top centre
+    return html.Nav([html.Div(id="nav-indicator", className="nav-indicator"), *buttons],   # floats at the top right
                     className="nav-rail", **{"aria-label": "Dashboard sections"})
 
 

@@ -37,7 +37,7 @@ its chart type and its category in the [FT Visual Vocabulary](https://ft-interac
 and the simplification review that removed six charts): [docs/analytical_questions.md](docs/analytical_questions.md).
 
 ### Interacting
-* **Navigation:** the tabs are icons in a translucent bar floating at the top (Olympic rings, medal, runner,
+* **Navigation:** the tabs are icons in a translucent bar floating at the top right, next to Filters (Olympic rings, medal, runner,
   ♀♂, ball); hover one for its name, and a highlight slides to the active one. On a phone the bar floats at the
   bottom. The title scrolls away with the page, so the charts get almost the whole screen.
 * **Filters** (years, season, sex, sports, countries): press **Filters** at the top right; the panel grows out
