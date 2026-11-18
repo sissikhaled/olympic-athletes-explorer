@@ -7,6 +7,9 @@ how each requirement is met: [docs/requirements_checklist.md](docs/requirements_
 
 ## Quick start
 
+Requires Python 3.13 (other recent versions will likely work, but the pinned versions were tested on 3.13).
+After cloning the repository, from its folder:
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
@@ -16,7 +19,19 @@ python app.py
 Then open **http://127.0.0.1:8050**. The cleaned data is included in the repository, so no download is needed
 to run the dashboard. Tested with Python 3.13 on macOS; a fresh clone installs in about 15 seconds.
 
-Options: `PORT=8051 python app.py` uses another port; `DASH_DEBUG=1 python app.py` enables hot reload.
+Options (macOS/Linux): `PORT=8051 python app.py` uses another port; `DASH_DEBUG=1 python app.py` enables hot reload.
+
+## Built with
+
+| Purpose | Libraries |
+|---|---|
+| Web app framework | [Dash](https://dash.plotly.com) 4.5, dash-bootstrap-components (layout), Dash AG Grid (athlete table) |
+| Charts | [Plotly](https://plotly.com/python/) 7.1 (listed on [PyViz.org](https://pyviz.org)) |
+| Data preparation | pandas 3.1, NumPy 2.5, PyArrow 26 (Parquet), requests (World Bank API) |
+| Analysis | scikit-learn 1.9 (standardisation + PCA for the sport similarity map) |
+| Tests | pytest 9.2 |
+
+Exact pinned versions: [requirements.txt](requirements.txt).
 
 ## What the dashboard answers
 
@@ -34,12 +49,13 @@ its chart type and its category in the [FT Visual Vocabulary](https://ft-interac
 | **Sport Comparison** | **Q5** Which sports select for similar athletes? | PCA similarity map with loadings, violins |
 
 15 chart forms. Full design rationale (why each form fits its question, interactions, colour system,
-and the simplification review that removed six charts): [docs/analytical_questions.md](docs/analytical_questions.md).
+and the review that trimmed the first 21-chart design): [docs/analytical_questions.md](docs/analytical_questions.md).
 
 ### Interacting
-* **Navigation:** the tabs are icons in a translucent bar floating at the top right, next to Filters (Olympic rings, medal, runner,
-  ♀♂, ball); hover one for its name, and a highlight slides to the active one. On a phone the bar floats at the
-  bottom. The title scrolls away with the page, so the charts get almost the whole screen.
+* **Navigation:** the tabs are icons in a translucent bar floating at the top right, next to **Filters**
+  (Olympic rings, medal, runner, ♀♂, ball); hover one for its name, and a highlight slides to the active one.
+  On a phone the bar floats at the bottom. The title scrolls away with the page, so the charts get almost the
+  whole screen.
 * **Filters** (years, season, sex, sports, countries): press **Filters** at the top right; the panel grows out
   of the button and collapses back into it. Filters apply to every tab; a badge on the button counts the active
   ones, and the **Showing:** bar at the top of the page lists them. A tab where a filter does not apply says so
@@ -81,15 +97,15 @@ Highlights (full log with row counts and 16 numbered decisions: [docs/data_prepa
   (physique data before 1960) shown as sample sizes instead of hidden.
 * **Derived variables:** age on the opening day, BMI, era, host flag, career length, result status, event
   gender, specialisation index, medals per capita / per GDP, sport profiles.
-* **Integration:** a hand-checked Olympic-code → ISO3 table joins World Bank data (historic teams such as the
-  USSR are kept as they competed).
+* **Integration:** a hand-checked Olympic-code → ISO3 table joins World Bank data. Historic teams such as the
+  USSR are kept as they competed; only the specialisation heatmap combines them with their successor.
 * **Validation:** medal counts derived from athlete results match the official medal table exactly for 97.7 % of
   country-Games rows; known facts (USA 1984 = 83 golds, Phelps = 23 golds, Rio 2016 = 306 events) are tested.
 
 ## Tests and quality checks
 
 ```bash
-python -m pytest                        # 615 tests, ~35 s
+python -m pytest                        # 598 tests, ~35 s
 python scripts/benchmark_callbacks.py   # server time per filter change, per tab
 ```
 The suite covers the cleaning rules, every chart builder, linked-view logic, and a sweep of every chart against
@@ -102,7 +118,7 @@ that empty charts explain why.
 ├── app.py                 entry point: python app.py
 ├── requirements.txt       pinned dependencies
 ├── REQUIREMENTS.md        assignment brief (reference)
-├── assets/               style.css (page styling, animations) and icons/ (rail icons, SVG)
+├── assets/                style.css (page styling, animations) and icons/ (navigation icons, SVG)
 ├── data/
 │   ├── raw/               downloaded data (not in git)
 │   ├── reference/         hand-made lookup tables: NOC → ISO3, map placement of historic teams
