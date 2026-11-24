@@ -73,14 +73,26 @@ def segmented(id_: str, options: list[str], value: str, labels: dict | None = No
     )
 
 
-def data_grid(id_: str, page_size: int = 10, row_selection: str | None = None) -> dag.AgGrid:
-    """Sortable, filterable, paged table (AG Grid; replaces the deprecated DataTable)."""
+def data_grid(id_: str, page_size: int = 10, row_selection: str | None = None,
+              columns: list[dict] | None = None, server_side: bool = False) -> dag.AgGrid:
+    """Sortable, filterable, paged table (AG Grid; replaces the deprecated DataTable).
+
+    server_side=True uses AG Grid's infinite row model: the grid asks the server for one page
+    at a time (getRowsRequest), so sorting and filtering run over ALL matching rows, not only
+    the rows that were sent to the browser."""
     options = {"pagination": True, "paginationPageSize": page_size, "animateRows": False,
                "domLayout": "autoHeight"}
+    extra = {}
+    if server_side:
+        options.update({"cacheBlockSize": page_size, "maxBlocksInCache": 20,
+                        "paginationPageSizeSelector": False})
+        extra = {"rowModelType": "infinite"}
     if row_selection:
         options["rowSelection"] = {"mode": "singleRow" if row_selection == "single" else "multiRow",
                                    "enableClickSelection": True, "checkboxes": False}
-    return dag.AgGrid(id=id_, rowData=[], columnDefs=[], className="ag-theme-quartz",
+    if not server_side:
+        extra = {"rowData": []}
+    return dag.AgGrid(id=id_, columnDefs=columns or [], className="ag-theme-quartz", **extra,
                       getRowId="params.data.athlete_id",
                       defaultColDef={"sortable": True, "filter": True, "resizable": True, "flex": 1,
                                      "minWidth": 90},

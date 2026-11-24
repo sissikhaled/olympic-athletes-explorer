@@ -72,8 +72,10 @@ def test_treemap_click_narrows_the_athlete_table():
     assert rows[0]["name"] == "Michael Phelps" and "Swimming athletes" in info
     rows, _ = ov.search_athletes(F, None, sport="Biathlon")
     assert all("Biathlon" in r["sports"] for r in rows)
-    rows, _, info = ov.update_athlete_table(F, "phelps", {"points": [{"id": "Winter/Biathlon"}]})
-    assert rows == [] and "Biathlon" in info
+    click = {"points": [{"id": "Winter/Biathlon"}]}
+    info = ov.update_athlete_info(F, "phelps", click)
+    assert "Biathlon" in info
+    assert ov.serve_athlete_rows({"startRow": 0, "endRow": 10}, F, "phelps", click) == {"rowData": [], "rowCount": 0}
 
 
 def test_treemap_puts_each_sport_under_its_own_season():
@@ -84,3 +86,40 @@ def test_treemap_puts_each_sport_under_its_own_season():
     assert skating.parent == "Winter" and "1908 and 1920 Summer Games" in skating.note
     assert sports.set_index("label").loc["Ice Hockey"].parent == "Winter"
     assert n[n.level == "season"].value.sum() == len(da.filter_events(F))   # nothing dropped
+
+
+def test_sorting_covers_all_matching_athletes_not_only_the_most_decorated():
+    """Bug: with Hungary selected, sorting by year did not show 2022 (only the top 500 were in the table)."""
+    table, info = ov.athlete_table({**F, "countries": ["HUN"]})
+    assert len(table) == 2928 and "2,928 athletes" in info
+    in_2022 = table[table["last"] == 2022].athlete_id.nunique()
+    page = ov.page_rows(table, {"startRow": 0, "endRow": 20, "sortModel": [{"colId": "years", "sort": "desc"}]})
+    assert page["rowCount"] == 2928
+    assert sum(r["years"].endswith("2022") for r in page["rowData"]) == in_2022 == 12
+    assert "first" not in page["rowData"][0] and "last" not in page["rowData"][0]
+
+
+def test_year_sort_is_numeric_not_text():
+    table, _ = ov.athlete_table({**F, "countries": ["HUN"]})
+    up = ov.page_rows(table, {"startRow": 0, "endRow": 5, "sortModel": [{"colId": "years", "sort": "asc"}]})
+    assert all(r["years"].startswith("1896") for r in up["rowData"])
+    down = ov.page_rows(table, {"startRow": 0, "endRow": 50, "sortModel": [{"colId": "years", "sort": "desc"}]})
+    last = [int(r["years"][-4:]) for r in down["rowData"]]
+    assert last == sorted(last, reverse=True)            # "2018–2022" ranks above "2020"
+
+
+def test_paging_and_column_filters_run_on_the_server():
+    table, _ = ov.athlete_table({**F, "countries": ["HUN"]})
+    p1 = ov.page_rows(table, {"startRow": 0, "endRow": 10})
+    p2 = ov.page_rows(table, {"startRow": 10, "endRow": 20})
+    assert len(p1["rowData"]) == len(p2["rowData"]) == 10
+    assert not {r["athlete_id"] for r in p1["rowData"]} & {r["athlete_id"] for r in p2["rowData"]}
+    fencing = ov.page_rows(table, {"startRow": 0, "endRow": 10, "filterModel": {
+        "sports": {"filterType": "text", "type": "contains", "filter": "fenc"}}})
+    assert 0 < fencing["rowCount"] < 2928 and all("Fencing" in r["sports"] for r in fencing["rowData"])
+    either = ov.page_rows(table, {"startRow": 0, "endRow": 10, "filterModel": {"name": {
+        "filterType": "text", "operator": "OR", "conditions": [{"type": "contains", "filter": "gerevich"},
+                                                                {"type": "contains", "filter": "papp"}]}}})
+    assert either["rowCount"] >= 2
+    assert ov.serve_athlete_rows({"startRow": 0, "endRow": 10}, {**F, "years": [1916, 1918]}, None, None) == \
+        {"rowData": [], "rowCount": 0}

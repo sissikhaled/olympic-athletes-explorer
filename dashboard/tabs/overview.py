@@ -5,13 +5,15 @@ be tested without a browser; the @callback functions only wire them to the page.
 """
 from __future__ import annotations
 
+import json
 import unicodedata
 from functools import lru_cache
 
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from dash import Input, Output, callback, html
+from dash import Input, Output, State, callback, clientside_callback, html
+from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 
 from .. import data_access as da
@@ -33,7 +35,8 @@ def layout():
             dbc.Input(id="ov-search", placeholder="Search athletes by name, e.g. phelps or comaneci…",
                       type="search", debounce=True, className="mb-2"),
             html.Div(id="ov-search-info", className="small text-secondary mb-2"),
-            data_grid("ov-athlete-table", page_size=10, row_selection="single"),
+            data_grid("ov-athlete-table", page_size=10, row_selection="single", columns=GRID_COLUMNS,
+                      server_side=True),
             html.Div(id="ov-athlete-card", className="mt-3"),
         ]), className="chart-card"),
     ], className="pt-2")
@@ -132,45 +135,121 @@ GRID_COLUMNS = [
     {"field": "bronze", "headerName": "Bronze", **NUM},
     {"field": "medals", "headerName": "Total", "sort": "desc", **{**NUM, "minWidth": 100}},
 ]
+DEFAULT_ORDER = ["medals", "gold", "n_games"]          # "most decorated first"
+TEXT_FILTER_COLUMNS = {"name", "noc", "sports", "years"}
 
 
-def search_athletes(f: dict, query: str | None, limit: int = 500,
-                    sport: str | None = None) -> tuple[list[dict], str]:
+def athlete_table(f: dict, query: str | None = None, sport: str | None = None) -> tuple[pd.DataFrame, str]:
+    """EVERY athlete matching the filters, search and treemap sport, one row each (cached per input).
+
+    The grid then pages, sorts and filters this whole table on the server (page_rows), so a sort
+    by year or team covers all matching athletes, not only the most decorated ones."""
+    table, info = _athlete_table_cached(json.dumps(f, sort_keys=True), (query or "").strip(), sport or "")
+    return table, info
+
+
+def _joined(a: pd.DataFrame, col: str, sep: str) -> pd.Series:
+    """Unique values per athlete in order of appearance, joined. Most athletes have exactly one
+    team and one sport: those are copied directly, and only the rest are joined (fast)."""
+    d = a[["athlete_id", col]].drop_duplicates()
+    many = d.athlete_id.duplicated(keep=False)
+    one = d[~many].set_index("athlete_id")[col]
+    several = d[many].groupby("athlete_id", sort=False)[col].agg(sep.join)
+    return pd.concat([one, several])
+
+
+@lru_cache(maxsize=8)
+def _athlete_table_cached(f_json: str, q: str, sport: str) -> tuple[pd.DataFrame, str]:
+    f = json.loads(f_json)
     a = da.filter_athletes(f)
     if sport:
         a = a[a.sport == sport]
-    q = (query or "").strip()
     if q:
         a = a[_folded_names().loc[a.index].str.contains(_fold(q), regex=False)]
     if a.empty:
         where = f" in {sport}" if sport else ""
-        return [], (f"No athlete named “{q}”{where} in the current filters." if q
-                    else "No athletes match the filters.")
-    # 1) fast numeric aggregation for every athlete, 2) text columns only for the rows shown
+        return pd.DataFrame(columns=["athlete_id"]), (
+            f"No athlete named “{q}”{where} in the current filters." if q else "No athletes match the filters.")
     g = (a.groupby("athlete_id")
-          .agg(first=("year", "min"), last=("year", "max"), n_games=("edition_id", "nunique"),
-               gold=("n_gold", "sum"), silver=("n_silver", "sum"), bronze=("n_bronze", "sum")))
+          .agg(name=("name", "first"), first=("year", "min"), last=("year", "max"),
+               n_games=("edition_id", "nunique"), gold=("n_gold", "sum"), silver=("n_silver", "sum"),
+               bronze=("n_bronze", "sum")))
     g["medals"] = g.gold + g.silver + g.bronze
-    g = g.sort_values(["medals", "gold", "n_games"], ascending=False)
+    g["noc"] = _joined(a, "noc", " / ")
+    g["sports"] = _joined(a, "sport", ", ")
+    g["years"] = g["first"].astype(str).where(g["first"] == g["last"],
+                                              g["first"].astype(str) + "–" + g["last"].astype(str))
+    g = g.sort_values(DEFAULT_ORDER, ascending=False).reset_index()
     n = len(g)
-    shown = g.head(limit).reset_index()
-    rows = a[a.athlete_id.isin(shown.athlete_id)]
-    text = rows.groupby("athlete_id").agg(name=("name", "first"),
-                                          noc=("noc", lambda s: " / ".join(dict.fromkeys(s))),
-                                          sports=("sport", lambda s: ", ".join(dict.fromkeys(s))))
-    shown = shown.merge(text, on="athlete_id")
-    shown["years"] = shown["first"].astype(str).where(
-        shown["first"] == shown["last"], shown["first"].astype(str) + "–" + shown["last"].astype(str))
     scope = f"{sport} athletes" if sport else "athletes"
     if q:
         info = (f"1 {scope[:-1]} matches “{q}”" if n == 1 else f"{n:,} {scope} match “{q}”") + " in the current filters."
     else:
-        info = f"Most decorated of {n:,} {scope} in the current filters (medals counted within the filters)."
+        info = f"{n:,} {scope} in the current filters; sort or filter any column (medals counted within the filters)."
     if sport:
         info += " Click the treemap's top bar to show all sports again."
-    if n > limit:
-        info += f" Showing the top {limit}."
-    return shown.drop(columns=["first", "last"]).to_dict("records"), info
+    return g, info
+
+
+def _apply_text_filter(df: pd.DataFrame, col: str, model: dict) -> pd.DataFrame:
+    """AG Grid text filter model (contains / equals / startsWith / ..., or two joined by AND / OR)."""
+    if "conditions" in model:
+        masks = [_text_mask(df[col], c) for c in model["conditions"]]
+        if not masks:
+            return df
+        m = masks[0]
+        for other in masks[1:]:
+            m = (m & other) if model.get("operator", "AND") == "AND" else (m | other)
+        return df[m]
+    return df[_text_mask(df[col], model)]
+
+
+def _text_mask(col: pd.Series, cond: dict) -> pd.Series:
+    kind, value = cond.get("type", "contains"), _fold(str(cond.get("filter") or ""))
+    text = col.astype(str).map(_fold)
+    if kind == "blank":
+        return text == ""
+    if kind == "notBlank":
+        return text != ""
+    if not value:
+        return pd.Series(True, index=col.index)
+    return {"contains": text.str.contains(value, regex=False),
+            "notContains": ~text.str.contains(value, regex=False),
+            "equals": text == value, "notEqual": text != value,
+            "startsWith": text.str.startswith(value), "endsWith": text.str.endswith(value)}.get(
+        kind, text.str.contains(value, regex=False))
+
+
+def page_rows(table: pd.DataFrame, request: dict | None) -> dict:
+    """One page for AG Grid's infinite row model: filter, sort, then slice [startRow, endRow)."""
+    request = request or {}
+    df = table
+    for col, model in (request.get("filterModel") or {}).items():
+        if col in TEXT_FILTER_COLUMNS and col in df:
+            df = _apply_text_filter(df, col, model)
+    keys, asc = [], []
+    for s in request.get("sortModel") or []:
+        col, up = s.get("colId"), s.get("sort") == "asc"
+        if col == "years":                     # by number: oldest first career start, or latest last Games
+            keys += ["first", "last"] if up else ["last", "first"]
+            asc += [up, up]
+        elif col in df:
+            keys.append(col)
+            asc.append(up)
+    if keys:
+        df = df.sort_values(keys + ["athlete_id"], ascending=asc + [True], kind="stable")
+    start, end = int(request.get("startRow", 0)), int(request.get("endRow", 10))
+    rows = df.iloc[start:end].drop(columns=["first", "last"], errors="ignore")
+    return {"rowData": rows.to_dict("records"), "rowCount": len(df)}
+
+
+def search_athletes(f: dict, query: str | None, limit: int = 500,
+                    sport: str | None = None) -> tuple[list[dict], str]:
+    """The `limit` most decorated matching athletes (default order); used by tests and scripts."""
+    table, info = athlete_table(f, query, sport)
+    if table.empty:
+        return [], info
+    return page_rows(table, {"startRow": 0, "endRow": limit})["rowData"], info
 
 
 def athlete_card(athlete_id: int) -> html.Div:
@@ -211,12 +290,37 @@ def update_treemap(f):
     return fig_treemap(f)
 
 
-@tab_callback(TAB_ID, Output("ov-athlete-table", "rowData"), Output("ov-athlete-table", "columnDefs"),
-          Output("ov-search-info", "children"),
+@tab_callback(TAB_ID, Output("ov-search-info", "children"),
           Input("filters", "data"), Input("ov-search", "value"), Input("ov-treemap", "clickData"))
-def update_athlete_table(f, query, click=None):
-    rows, info = search_athletes(f, query, sport=sport_from_click(click))
-    return rows, GRID_COLUMNS, info
+def update_athlete_info(f, query, click=None):
+    return athlete_table(f, query, sport_from_click(click))[1]
+
+
+@callback(Output("ov-athlete-table", "getRowsResponse"), Input("ov-athlete-table", "getRowsRequest"),
+          State("filters", "data"), State("ov-search", "value"), State("ov-treemap", "clickData"))
+def serve_athlete_rows(request, f, query, click):
+    """The grid asks for one page at a time; sorting and filtering run here over all matching athletes."""
+    if not request:
+        raise PreventUpdate
+    table, _ = athlete_table(f, query, sport_from_click(click))
+    if table.empty:
+        return {"rowData": [], "rowCount": 0}
+    return page_rows(table, request)
+
+
+# When the filters, search or treemap sport change, the grid drops its cached pages and asks again
+clientside_callback(
+    """function(f, q, click) {
+        if (window.dash_ag_grid && dash_ag_grid.getApiAsync) {
+            dash_ag_grid.getApiAsync("ov-athlete-table").then(api => {
+                api.purgeInfiniteCache();
+                api.deselectAll && api.deselectAll();
+            });
+        }
+        return window.dash_clientside.no_update;
+    }""",
+    Output("ov-athlete-table", "id"), Input("filters", "data"), Input("ov-search", "value"),
+    Input("ov-treemap", "clickData"), prevent_initial_call=True)
 
 
 @callback(Output("ov-athlete-card", "children"), Input("ov-athlete-table", "selectedRows"))

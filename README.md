@@ -106,7 +106,7 @@ Highlights (full log with row counts and 16 numbered decisions: [docs/data_prepa
 ## Tests and quality checks
 
 ```bash
-python -m pytest                        # 598 tests, ~35 s
+python -m pytest                        # 601 tests, ~35 s
 python scripts/benchmark_callbacks.py   # server time per filter change, per tab
 ```
 The suite covers the cleaning rules, every chart builder, linked-view logic, and a sweep of every chart against
